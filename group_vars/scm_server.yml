@@ -12,32 +12,6 @@ scm_csd:
   - http://<host>/CSD/CLOUDERA_DATA_SCIENCE_WORKBENCH-CDH5-1.4.2.jar
 #  - http://<host>/CSD/SPARK2_ON_YARN-2.3.0.cloudera4.jar
 
-scm_products:
-  - product: CDH
-    version: 5.16.2-1.cdh5.16.2.p0.8
-
-  - product: SPARK2
-    version: 2.4.0.cloudera2-1.cdh5.13.3.p0.1041012
-
- # - product: KAFKA
- #   version: 4.0.0-1.4.0.0.p0.1
-  
-  - product: KEYTRUSTEE
-    version: 6.1.0-1.KEYTRUSTEE6.1.0.p0.592714
-
-#  - product: ORACLE_INSTANT_CLIENT
-#    version: 11.2-1.oracleinstantclient1.0.0.p0.134
-
- # - product: KEYTRUSTEE
- #   version: 6.1.0.p0.592714
-
-kts_products:
-  - product: KEYTRUSTEE_SERVER
-    version: 6.1.0-1.keytrustee6.1.0.p0.592761
-
-  - product: CDH
-    version: 5.16.2-1.cdh5.16.2.p0.8
-
 oom_heap_dump_dir: /var/log/heapdumps
 eventserver_index_dir: /var/log/cloudera-scm-eventserver
 hmon_firehose_storage_dir: /var/log/cloudera-host-monitor
