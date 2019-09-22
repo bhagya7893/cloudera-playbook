@@ -1,0 +1,244 @@
+---
+- include_vars: ../../../group_vars/pki.yml
+- include_vars: ../../../group_vars/ca.yml
+
+#- name: Install {{ openssl_path }}
+#  yum:
+#    name: {{ openssl_path }}
+#    state: latest
+
+- name: Prepare security directories
+  file:
+    state: directory
+    path: "{{ security_root }}"
+    mode: 0744
+    owner: root
+
+- name: Prepare security subdirs
+  file:
+    state: directory
+    path: "{{ security_root }}/{{ item }}"
+    mode: 0700
+    owner: root
+  with_items:
+    - "x509"
+    - "jks"
+    - "CAcerts"
+
+- name: Create JKS file
+  shell: "{{ keytool_path }} -genkeypair -alias {{ inventory_hostname }} -keyalg RSA -keystore {{ security_root }}/jks/{{ inventory_hostname }}.jks -keysize 2048 -dname \"CN={{ inventory_hostname }},OU={{ ca_ou }},O={{ ca_org_name }},ST={{ ca_state_or_province }},C={{ ca_countryname_default }}\" -ext san=dns:{{ inventory_hostname }} -storepass {{ keystore_password }} -keypass {{ keystore_password }} -storetype jks"
+  args: 
+    creates: "{{ security_root }}/jks/{{ inventory_hostname }}.jks"
+
+- name: Check JKS contains a private key
+  shell: "{{ keytool_path }} -list -keystore {{ security_root }}/jks/{{ inventory_hostname }}.jks -alias {{ inventory_hostname }} -storepass {{ keystore_password }} | grep PrivateKeyEntry"
+
+- name: Create CSR
+  shell: "{{ keytool_path }} -certreq -alias {{ inventory_hostname }} -keystore {{ security_root }}/jks/{{ inventory_hostname }}.jks -file {{ security_root }}/x509/{{ inventory_hostname }}.csr -ext san=dns:{{ inventory_hostname }} -ext EKU=serverAuth,clientAuth -storepass {{ keystore_password }} -keypass {{ keystore_password }}"
+  args: 
+    creates: "{{ security_root }}/x509/{{ inventory_hostname }}.csr"
+
+- name: Prepare directory for csrs
+  local_action:
+    module: file
+    state: directory
+    mode: 0777
+    owner: "{{ ansible_user_id }}"
+    path: "{{ csr_certificates_local_location }}"
+
+- name: Fetch certificate signing requests
+  fetch:
+    src: "{{ security_root }}/x509/{{ inventory_hostname }}.csr"
+    dest: "{{ csr_certificates_local_location }}/"
+    flat: yes
+  ignore_errors: yes
+
+- name: Push ca files
+  copy:
+    src: "{{ item }}"
+    dest: "{{ security_root }}/CAcerts"
+  with_items:
+    - "{{ signed_certificates_local_location }}/{{ chain_cert_name }}"
+    - "{{ signed_certificates_local_location }}/{{ intermediate_ca_cert_name }}"
+    - "{{ signed_certificates_local_location }}/{{ root_ca_cert_name }}"
+
+- set_fact:
+    root_ca_present: False
+
+- name: Check Root CA is present
+  shell: "{{ keytool_path }} -list -keystore {{ security_root }}/jks/{{ inventory_hostname }}.jks -storepass {{ keystore_password }} -storetype jks -alias {{ root_ca_alias }}"
+  register: root_ca_check
+  ignore_errors: yes
+
+- set_fact:
+    root_ca_present: True
+  when: root_ca_check.rc == 0
+
+- name: Check Root CA is correct
+  shell: "[[ $({{ openssl_path }} x509 -noout -modulus -in {{ security_root }}/CAcerts/{{ root_ca_cert_name }} | {{ openssl_path }} md5) == $({{ keytool_path }} -list -keystore {{ security_root }}/jks/{{ inventory_hostname }}.jks -storepass {{ keystore_password }} -storetype jks -alias {{ root_ca_alias }} -rfc | {{ openssl_path }} x509 -inform pem -modulus -noout | {{ openssl_path }} md5) ]]"
+  when: root_ca_present == True
+  ignore_errors: yes
+  register: root_ca_correctness
+
+- name: Remove incorrect Root CA
+  shell: "{{ keytool_path }} -delete -alias {{ root_ca_alias }} -keystore {{ security_root }}/jks/{{ inventory_hostname }}.jks -storepass {{ keystore_password }}"
+  when: root_ca_present == True and root_ca_correctness.rc != 0
+
+- set_fact:
+    root_ca_present: False
+  when: root_ca_present == True and root_ca_correctness.rc != 0
+
+- name: Install Root CA cert into JKS
+  shell: "{{ keytool_path }} -importcert -alias {{ root_ca_alias }} -keystore {{ security_root }}/jks/{{ inventory_hostname }}.jks -file {{ item }} -storepass {{ keystore_password }} -noprompt -trustcacerts"
+  with_items: 
+    - "{{ security_root }}/CAcerts/{{ root_ca_cert_name }}"
+  when: root_ca_present == False
+
+- set_fact:
+    int_ca_present: False
+
+- name: Check Intermediate CA is present
+  shell: "{{ keytool_path }} -list -keystore {{ security_root }}/jks/{{ inventory_hostname }}.jks -storepass {{ keystore_password }} -storetype jks -alias {{ intermediate_ca_alias }}"
+  register: int_ca_check
+  ignore_errors: yes
+
+- set_fact:
+    int_ca_present: True
+  when: int_ca_check.rc == 0
+
+- name: Check Intermediate CA is correct
+  shell: "[[ $({{ openssl_path }} x509 -noout -modulus -in {{ security_root }}/CAcerts/{{ intermediate_ca_cert_name }} | {{ openssl_path }} md5) == $({{ keytool_path }} -list -keystore {{ security_root }}/jks/{{ inventory_hostname }}.jks -storepass {{ keystore_password }} -storetype jks -alias {{ intermediate_ca_alias }} -rfc | {{ openssl_path }} x509 -inform pem -modulus -noout | {{ openssl_path }} md5) ]]"
+  when: int_ca_present == True
+  ignore_errors: yes
+  register: int_ca_correctness
+
+- name: Remove incorrect Intermediateoot CA
+  shell: "{{ keytool_path }} -delete -alias {{ intermediate_ca_alias }} -keystore {{ security_root }}/jks/{{ inventory_hostname }}.jks -storepass {{ keystore_password }}"
+  when: int_ca_present == True and int_ca_correctness.rc != 0
+
+- set_fact:
+    int_ca_present: False
+  when: int_ca_present == True and int_ca_correctness.rc != 0
+
+- name: Install Intermediate CA cert into JKS
+  shell: "{{ keytool_path }} -importcert -alias {{ intermediate_ca_alias }} -keystore {{ security_root }}/jks/{{ inventory_hostname }}.jks -file {{ item }} -storepass {{ keystore_password }} -noprompt -trustcacerts"
+  with_items: 
+    - "{{ security_root }}/CAcerts/{{ intermediate_ca_cert_name }}"
+  when: int_ca_present == False
+
+- name: Check if the exported key exists
+  file:
+    path: "{{ security_root }}/x509/{{ inventory_hostname }}.key"
+    state: file
+  register: keystatus
+  ignore_errors: yes
+
+- name: Export PKCS12
+  shell: "{{ keytool_path }} -importkeystore -srckeystore {{ security_root }}/jks/{{ inventory_hostname }}.jks -destkeystore {{ security_root }}/x509/{{ inventory_hostname }}.p12 -deststoretype PKCS12 -srcstorepass {{ keystore_password }} -srckeypass {{ keystore_password }} -deststorepass {{ keystore_password }} -destkeypass {{ keystore_password }} -srcalias {{ inventory_hostname }} -destalias {{ inventory_hostname }}"
+  when: keystatus is failed
+
+- name: Export Key
+  shell: "{{ openssl_path }} pkcs12 -in {{ security_root }}/x509/{{ inventory_hostname }}.p12 -nocerts -out {{ security_root }}/x509/{{ inventory_hostname }}.key -passout pass:{{ keystore_password }} -passin pass:{{ keystore_password }}"
+  when: keystatus is failed
+
+- name: Delete PKCS12
+  file:
+    state: absent
+    path: "{{ security_root }}/x509/{{ inventory_hostname }}.p12"
+
+- name: Write key password
+  shell: "echo {{ keystore_password }} > {{ security_root }}/x509/key.pw"
+  args:
+    creates: "{{ security_root }}/x509/key.pw"
+
+- name: Change password permissions
+  file:
+    state: file
+    path: "{{ security_root }}/x509/key.pw"
+    mode: 400
+    owner: root
+
+- name: Check cacerts_file exists
+  file:
+    path: "{{ cacerts_file }}"
+    state: file
+
+- name: Copy cacerts to jssecacerts
+  shell: "cp {{ cacerts_file }} {{ jssecacerts_file }}"
+  args:
+    creates: "{{ jssecacerts_file }}"
+
+- name: Check cacerts_file exists
+  file:
+    path: "{{ jssecacerts_file }}"
+    mode: 744
+    state: file
+
+- name: Change jssecacerts away from default
+  shell: "{{ keytool_path }} -storepasswd -storepass changeit -keystore {{ jssecacerts_file }} -new {{ jssecacerts_pw }}"
+  ignore_errors: yes
+
+- set_fact:
+    root_ca_present: False
+
+- name: Check Root CA is present
+  shell: "{{ keytool_path }} -list -keystore {{ jssecacerts_file }} -storepass {{ jssecacerts_pw }} -storetype jks -alias {{ root_ca_alias }}"
+  register: root_ca_check
+  ignore_errors: yes
+
+- set_fact:
+    root_ca_present: True
+  when: root_ca_check.rc == 0
+
+- name: Check Root CA is correct
+  shell: "[[ $({{ openssl_path }} x509 -noout -modulus -in {{ security_root }}/CAcerts/{{ root_ca_cert_name }} | {{ openssl_path }} md5) == $({{ keytool_path }} -list -keystore {{ jssecacerts_file }} -storepass {{ jssecacerts_pw }} -storetype jks -alias {{ root_ca_alias }} -rfc | {{ openssl_path }} x509 -inform pem -modulus -noout | {{ openssl_path }} md5) ]]"
+  when: root_ca_present == True
+  ignore_errors: yes
+  register: root_ca_correctness
+
+- name: Remove incorrect Root CA
+  shell: "{{ keytool_path }} -delete -alias {{ root_ca_alias }} -keystore {{ jssecacerts_file }} -storepass {{ jssecacerts_pw }}"
+  when: root_ca_present == True and root_ca_correctness.rc != 0
+
+- set_fact:
+    root_ca_present: False
+  when: root_ca_present == True and root_ca_correctness.rc != 0
+
+- name: Install Root CA cert into JKS
+  shell: "{{ keytool_path }} -importcert -alias {{ root_ca_alias }} -keystore {{ jssecacerts_file }} -file {{ item }} -storepass {{ jssecacerts_pw }} -noprompt -trustcacerts"
+  with_items: 
+    - "{{ security_root }}/CAcerts/{{ root_ca_cert_name }}"
+  when: root_ca_present == False
+
+- set_fact:
+    int_ca_present: False
+
+- name: Check Intermediate CA is present
+  shell: "{{ keytool_path }} -list -keystore {{ jssecacerts_file }} -storepass {{ jssecacerts_pw }} -storetype jks -alias {{ intermediate_ca_alias }}"
+  register: int_ca_check
+  ignore_errors: yes
+
+- set_fact:
+    int_ca_present: True
+  when: int_ca_check.rc == 0
+
+- name: Check Intermediate CA is correct
+  shell: "[[ $({{ openssl_path }} x509 -noout -modulus -in {{ security_root }}/CAcerts/{{ intermediate_ca_cert_name }} | {{ openssl_path }} md5) == $({{ keytool_path }} -list -keystore {{ jssecacerts_file }} -storepass {{ jssecacerts_pw }} -storetype jks -alias {{ intermediate_ca_alias }} -rfc | {{ openssl_path }} x509 -inform pem -modulus -noout | {{ openssl_path }} md5) ]]"
+  when: int_ca_present == True
+  ignore_errors: yes
+  register: int_ca_correctness
+
+- name: Remove incorrect Intermediateoot CA
+  shell: "{{ keytool_path }} -delete -alias {{ intermediate_ca_alias }} -keystore {{ jssecacerts_file }} -storepass {{ jssecacerts_pw }}"
+  when: int_ca_present == True and int_ca_correctness.rc != 0
+
+- set_fact:
+    int_ca_present: False
+  when: int_ca_present == True and int_ca_correctness.rc != 0
+
+- name: Install Intermediate CA cert into JKS
+  shell: "{{ keytool_path }} -importcert -alias {{ intermediate_ca_alias }} -keystore {{ jssecacerts_file }} -file {{ item }} -storepass {{ jssecacerts_pw }} -noprompt -trustcacerts"
+  with_items: 
+    - "{{ security_root }}/CAcerts/{{ intermediate_ca_cert_name }}"
+  when: int_ca_present == False
+

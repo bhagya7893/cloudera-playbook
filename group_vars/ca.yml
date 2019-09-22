@@ -1,0 +1,17 @@
+---
+openssl_path: "/usr/local/Cellar/openssl@1.1/1.1.1d/bin/openssl"
+ca_root_location: "/tmp/ca"
+ca_root_key_password: password
+ca_countryname_default: GB
+ca_state_or_province: England
+ca_org_name: Cloudera Inc
+ca_ou: PS
+ca_root_cn: Root CA
+ca_intermediate_location: "/tmp/ca/intermediate"
+ca_intermediate_key_password: password
+ca_intermediate_cn: Intermediate CA
+root_ca_cert_name: ca.cert.pem
+intermediate_ca_cert_name: intermediate.cert.pem
+chain_cert_name: ca-chain.cert.pem
+signed_certificates_local_location: "/tmp/signedcerts"
+csr_certificates_local_location: "/tmp/csrs"

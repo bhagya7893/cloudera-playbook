@@ -1,0 +1,39 @@
+---
+- include_vars: ../../../group_vars/ca.yml
+
+- name: Identify CSRs for signing
+  local_action:
+    module: find
+    paths: "{{ csr_certificates_local_location }}"
+    patterns: '*.csr'
+  register: csrs
+
+- name: Fetch CSRs
+  copy:
+    src: "{{ item.path }}"
+    dest: "{{ ca_intermediate_location }}/csrs/"
+  with_items:
+    - "{{ csrs.files }}"
+  register: csrs_remote
+
+- debug:
+    var: csrs_remote
+
+- name: Sign certificate
+  shell: "{{ openssl_path }} ca -batch -config  {{ ca_intermediate_location }}/openssl.cnf -extensions cloudera_req -days 730 -notext -md sha256 -in {{ item.item.path }}  -out {{ ca_intermediate_location }}/certs/$(basename /tmp/ca/intermediate/csrs/{{ item.item.path }} | sed 's/csr/pem/') -passin pass:{{ ca_root_key_password }}"
+  with_items:
+    - "{{ csrs_remote.results }}"
+  ignore_errors: true
+
+- name: Identify signed certificates from CA
+  find: 
+    paths: "{{ ca_intermediate_location }}/certs/"
+    patterns: "*.pem"
+  register: file_2_fetch
+
+- name: Fetch signed signed_certificates
+  fetch:
+    flat: yes
+    src: "{{ item.path }}"
+    dest: "{{ signed_certificates_local_location }}/"
+  with_items: "{{ file_2_fetch.files }}"
