@@ -16,9 +16,6 @@
     - "{{ csrs.files }}"
   register: csrs_remote
 
-- debug:
-    var: csrs_remote
-
 - name: Sign certificate
   shell: "{{ openssl_path }} ca -batch -config  {{ ca_intermediate_location }}/openssl.cnf -extensions cloudera_req -days 730 -notext -md sha256 -in {{ item.item.path }}  -out {{ ca_intermediate_location }}/certs/$(basename /tmp/ca/intermediate/csrs/{{ item.item.path }} | sed 's/csr/pem/') -passin pass:{{ ca_root_key_password }}"
   with_items:
@@ -37,3 +34,9 @@
     src: "{{ item.path }}"
     dest: "{{ signed_certificates_local_location }}/"
   with_items: "{{ file_2_fetch.files }}"
+
+- name: Remove CSRs from temp directory
+  local_action:
+    module: file
+    state: absent
+    path: "{{ csr_certificates_local_location }}"

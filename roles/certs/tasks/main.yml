@@ -18,7 +18,7 @@
   file:
     state: directory
     path: "{{ security_root }}/{{ item }}"
-    mode: 0700
+    mode: 0744
     owner: root
   with_items:
     - "x509"
@@ -57,6 +57,7 @@
   copy:
     src: "{{ item }}"
     dest: "{{ security_root }}/CAcerts"
+    mode: 0744
   with_items:
     - "{{ signed_certificates_local_location }}/{{ chain_cert_name }}"
     - "{{ signed_certificates_local_location }}/{{ intermediate_ca_cert_name }}"
@@ -159,86 +160,121 @@
     owner: root
 
 - name: Check cacerts_file exists
-  file:
+  local_action:
+    module: file
     path: "{{ cacerts_file }}"
     state: file
 
+- set_fact:
+    jssecacerts_local_location: "{{ signed_certificates_local_location }}/jssecacerts"
+
+- name: Prepare directory for signed certs
+  local_action:
+    module: file
+    state: directory
+    mode: 0777
+    owner: "{{ ansible_user_id }}"
+    path: "{{ signed_certificates_local_location }}"
+
 - name: Copy cacerts to jssecacerts
-  shell: "cp {{ cacerts_file }} {{ jssecacerts_file }}"
+  local_action: shell cp {{ cacerts_file }} {{ jssecacerts_local_location }}
+  sudo: yes
+  run_once: true
   args:
-    creates: "{{ jssecacerts_file }}"
+    creates: "{{ jssecacerts_local_location }}"
 
 - name: Check cacerts_file exists
-  file:
-    path: "{{ jssecacerts_file }}"
-    mode: 744
+  local_action:
+    module: file
+    path: "{{ jssecacerts_local_location }}"
+    mode: 0744
     state: file
+  run_once: true
 
 - name: Change jssecacerts away from default
-  shell: "{{ keytool_path }} -storepasswd -storepass changeit -keystore {{ jssecacerts_file }} -new {{ jssecacerts_pw }}"
+  local_action: shell {{ keytool_path }} -storepasswd -storepass changeit -keystore {{ jssecacerts_local_location }} -new {{ jssecacerts_pw }}
+  run_once: true
   ignore_errors: yes
 
 - set_fact:
     root_ca_present: False
+  run_once: true
 
-- name: Check Root CA is present
-  shell: "{{ keytool_path }} -list -keystore {{ jssecacerts_file }} -storepass {{ jssecacerts_pw }} -storetype jks -alias {{ root_ca_alias }}"
+- name: Check Root CA is present in jssecacerts
+  local_action: shell {{ keytool_path }} -list -keystore {{ jssecacerts_local_location }} -storepass {{ jssecacerts_pw }} -storetype jks -alias {{ root_ca_alias }}
   register: root_ca_check
+  run_once: true
   ignore_errors: yes
 
 - set_fact:
     root_ca_present: True
   when: root_ca_check.rc == 0
+  run_once: true
 
-- name: Check Root CA is correct
-  shell: "[[ $({{ openssl_path }} x509 -noout -modulus -in {{ security_root }}/CAcerts/{{ root_ca_cert_name }} | {{ openssl_path }} md5) == $({{ keytool_path }} -list -keystore {{ jssecacerts_file }} -storepass {{ jssecacerts_pw }} -storetype jks -alias {{ root_ca_alias }} -rfc | {{ openssl_path }} x509 -inform pem -modulus -noout | {{ openssl_path }} md5) ]]"
+- name: Check Root CA is correct in jssecacerts
+  local_action: shell [[ $({{ openssl_path }} x509 -noout -modulus -in {{ security_root }}/CAcerts/{{ root_ca_cert_name }} | {{ openssl_path }} md5) == $({{ keytool_path }} -list -keystore {{ jssecacerts_local_location }} -storepass {{ jssecacerts_pw }} -storetype jks -alias {{ root_ca_alias }} -rfc | {{ openssl_path }} x509 -inform pem -modulus -noout | {{ openssl_path }} md5) ]]
   when: root_ca_present == True
   ignore_errors: yes
   register: root_ca_correctness
+  run_once: true
 
-- name: Remove incorrect Root CA
-  shell: "{{ keytool_path }} -delete -alias {{ root_ca_alias }} -keystore {{ jssecacerts_file }} -storepass {{ jssecacerts_pw }}"
+- name: Remove incorrect Root CA from jssecacerts
+  local_action: shell {{ keytool_path }} -delete -alias {{ root_ca_alias }} -keystore {{ jssecacerts_local_location }} -storepass {{ jssecacerts_pw }}
   when: root_ca_present == True and root_ca_correctness.rc != 0
+  run_once: true
 
 - set_fact:
     root_ca_present: False
   when: root_ca_present == True and root_ca_correctness.rc != 0
+  run_once: true
 
-- name: Install Root CA cert into JKS
-  shell: "{{ keytool_path }} -importcert -alias {{ root_ca_alias }} -keystore {{ jssecacerts_file }} -file {{ item }} -storepass {{ jssecacerts_pw }} -noprompt -trustcacerts"
+- name: Install Root CA cert into jssecacerts
+  local_action: shell {{ keytool_path }} -importcert -alias {{ root_ca_alias }} -keystore {{ jssecacerts_local_location }} -file {{ item }} -storepass {{ jssecacerts_pw }} -noprompt -trustcacerts
   with_items: 
     - "{{ security_root }}/CAcerts/{{ root_ca_cert_name }}"
   when: root_ca_present == False
+  run_once: true
 
 - set_fact:
     int_ca_present: False
+  run_once: true
 
-- name: Check Intermediate CA is present
-  shell: "{{ keytool_path }} -list -keystore {{ jssecacerts_file }} -storepass {{ jssecacerts_pw }} -storetype jks -alias {{ intermediate_ca_alias }}"
+- name: Check Intermediate CA is present in jssecacerts
+  local_action: shell {{ keytool_path }} -list -keystore {{ jssecacerts_local_location }} -storepass {{ jssecacerts_pw }} -storetype jks -alias {{ intermediate_ca_alias }}
   register: int_ca_check
   ignore_errors: yes
+  run_once: true
 
 - set_fact:
     int_ca_present: True
   when: int_ca_check.rc == 0
+  run_once: true
 
-- name: Check Intermediate CA is correct
-  shell: "[[ $({{ openssl_path }} x509 -noout -modulus -in {{ security_root }}/CAcerts/{{ intermediate_ca_cert_name }} | {{ openssl_path }} md5) == $({{ keytool_path }} -list -keystore {{ jssecacerts_file }} -storepass {{ jssecacerts_pw }} -storetype jks -alias {{ intermediate_ca_alias }} -rfc | {{ openssl_path }} x509 -inform pem -modulus -noout | {{ openssl_path }} md5) ]]"
+- name: Check Intermediate CA is correct in jssecacerts
+  local_action: shell [[ $({{ openssl_path }} x509 -noout -modulus -in {{ security_root }}/CAcerts/{{ intermediate_ca_cert_name }} | {{ openssl_path }} md5) == $({{ keytool_path }} -list -keystore {{ jssecacerts_local_location }} -storepass {{ jssecacerts_pw }} -storetype jks -alias {{ intermediate_ca_alias }} -rfc | {{ openssl_path }} x509 -inform pem -modulus -noout | {{ openssl_path }} md5) ]]
   when: int_ca_present == True
   ignore_errors: yes
   register: int_ca_correctness
+  run_once: true
 
-- name: Remove incorrect Intermediateoot CA
-  shell: "{{ keytool_path }} -delete -alias {{ intermediate_ca_alias }} -keystore {{ jssecacerts_file }} -storepass {{ jssecacerts_pw }}"
+- name: Remove incorrect Intermediateoot CA from jssecacerts
+  local_action: shell {{ keytool_path }} -delete -alias {{ intermediate_ca_alias }} -keystore {{ jssecacerts_local_location }} -storepass {{ jssecacerts_pw }}
   when: int_ca_present == True and int_ca_correctness.rc != 0
+  run_once: true
 
 - set_fact:
     int_ca_present: False
   when: int_ca_present == True and int_ca_correctness.rc != 0
+  run_once: true
 
-- name: Install Intermediate CA cert into JKS
-  shell: "{{ keytool_path }} -importcert -alias {{ intermediate_ca_alias }} -keystore {{ jssecacerts_file }} -file {{ item }} -storepass {{ jssecacerts_pw }} -noprompt -trustcacerts"
+- name: Install Intermediate CA cert into jssecacerts
+  local_action: shell {{ keytool_path }} -importcert -alias {{ intermediate_ca_alias }} -keystore {{ jssecacerts_local_location }} -file {{ item }} -storepass {{ jssecacerts_pw }} -noprompt -trustcacerts
   with_items: 
     - "{{ security_root }}/CAcerts/{{ intermediate_ca_cert_name }}"
   when: int_ca_present == False
+  run_once: true
 
+- name: Distribute jssecacerts file
+  copy:
+    src: "{{ jssecacerts_local_location }}"
+    dest: "{{ jssecacerts_file }}"

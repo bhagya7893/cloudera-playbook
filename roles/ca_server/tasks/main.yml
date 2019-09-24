@@ -1,10 +1,15 @@
 ---
 - include_vars: ../../../group_vars/ca.yml
 
-#- name: Install openssl
-#  yum:
-#    name: openssl
-#    state: latest
+- name: Install openssl
+  yum:
+    name: openssl
+    state: latest
+
+- name: Install PyOpenSSL
+  yum:
+    name: pyOpenSSL
+    state: latest
 
 - name: Prepare Root CA directories
   file:

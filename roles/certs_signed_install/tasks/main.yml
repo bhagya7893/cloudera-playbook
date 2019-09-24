@@ -9,9 +9,6 @@
   register: filestatus
   ignore_errors: yes
 
-- debug:
-    var: filestatus
-
 - name: Prepare local directory for CSRs
   local_action:
     module: file
