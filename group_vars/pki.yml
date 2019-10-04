@@ -5,7 +5,7 @@ keystore_name: "server.jks"
 root_ca_alias: RootCA
 intermediate_ca_alias: IntermediateCA
 keystore_password: password
-cacerts_file: /Library/Java/JavaVirtualMachines/jdk1.8.0_201.jdk/Contents/Home/jre/lib/security/cacerts
-jssecacerts_file: /Library/Java/JavaVirtualMachines/jdk1.8.0_201.jdk/Contents/Home/jre/lib/security/jssecacerts
+cacerts_file: /etc/pki/ca-trust/extracted/java/cacerts
+jssecacerts_file: /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.222.b10-1.el7_7.x86_64/jre/lib/security/jssecacerts
 jssecacerts_pw: password
 keytool_path: keytool

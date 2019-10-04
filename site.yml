@@ -14,7 +14,9 @@
   tags: rngd
 
 - name: Install Java
-  hosts: cdh_servers
+  hosts: 
+   - cdh_servers
+   - ca_server
   roles:
     - java
   tags: java
@@ -87,7 +89,7 @@
   hosts: scm_server
   roles:
     - scm
-  tags: cluster_template
+  tags: scm
 
 - name: Install CDH
   hosts: scm_server

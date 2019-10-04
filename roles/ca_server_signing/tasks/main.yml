@@ -17,7 +17,7 @@
   register: csrs_remote
 
 - name: Sign certificate
-  shell: "{{ openssl_path }} ca -batch -config  {{ ca_intermediate_location }}/openssl.cnf -extensions cloudera_req -days 730 -notext -md sha256 -in {{ item.item.path }}  -out {{ ca_intermediate_location }}/certs/$(basename /tmp/ca/intermediate/csrs/{{ item.item.path }} | sed 's/csr/pem/') -passin pass:{{ ca_root_key_password }}"
+  shell: "{{ openssl_path }} ca -batch -config  {{ ca_intermediate_location }}/openssl.cnf -extensions cloudera_req -days 730 -notext -md sha256 -in {{ item.dest }}  -out {{ ca_intermediate_location }}/certs/$(basename /tmp/ca/intermediate/csrs/{{ item.dest }} | sed 's/csr/pem/') -passin pass:{{ ca_root_key_password }}"
   with_items:
     - "{{ csrs_remote.results }}"
   ignore_errors: true

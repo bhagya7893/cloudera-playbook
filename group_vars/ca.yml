@@ -1,5 +1,5 @@
 ---
-openssl_path: "/usr/local/Cellar/openssl@1.1/1.1.1d/bin/openssl"
+openssl_path: "openssl"
 ca_root_location: "/tmp/ca"
 ca_root_key_password: password
 ca_countryname_default: GB
