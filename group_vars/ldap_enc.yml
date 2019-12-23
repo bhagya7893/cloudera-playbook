@@ -1,0 +1,32 @@
+---
+
+ldap_udom:
+  url: ldaps://mit.example.com
+  domain: mit.example.com
+  bind_dn: cloudera-scm@mit.example.com
+  bind_pass: password
+  base_dn: dc=mit,dc=example,dc=com
+  user_filter: (objectClass=user)
+  user_name_attr: sAMAccountName
+  group_filter: (objectClass=group)
+  group_name_attr: cn
+  group_member_attr: member
+
+ldap_rdom:
+  url: ldaps://mit.example.com
+  domain: mit.example.com
+  auth_type: ACTIVE_DIRECTORY
+  bind_dn: cloudera-scm@mit.example.com
+  bind_pass: password
+  base_dn: dc=mit,dc=example,dc=com
+  user_filter: (objectClass=user)
+  user_name_attr: sAMAccountName
+  group_filter: (objectClass=group)
+  group_name_attr: cn
+  group_member_attr: member
+  cm_clu_admin: GROUP_CDH_ADMIN
+  cm_full_admin: GROUP_CDH_ADMIN
+  cm_key_admin: GROUP_CDH_ADMIN
+  cm_operator: GROUP_CDH_ADMIN
+  cm_read_only: GROUP_CDH_ADMIN
+  cm_user_admin: GROUP_CDH_ADMIN

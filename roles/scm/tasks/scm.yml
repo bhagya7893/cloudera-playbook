@@ -1,10 +1,15 @@
 ---
 
+- include_vars: "{{ inventory_dir }}/group_vars/scm_server.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/scm_server_enc.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/krb5_server.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/ldap_enc.yml"
+
 - name: Prepare Cloudera Manager settings
   template:
     src: "scm.j2"
-    dest: "{{ tmp_dir }}/scm.json"
-  delegate_to: localhost
+    dest: "{{ tmp_dir }}/scm.json" 
+    mode: 0777
 
 # https://cloudera.github.io/cm_api/apidocs/v13/path__cm_config.html
 - name: Update Cloudera Manager settings
@@ -19,13 +24,38 @@
     password: "{{ scm_default_pass }}"
     return_content: yes
   register: scm_resp
-  delegate_to: localhost
-- debug: var=scm_resp
 
 - file:
     path: "{{ tmp_dir }}/scm.json"
     state: absent
-  delegate_to: localhost
+
+- name: Restart SCM
+  service: name=cloudera-scm-server state=restarted enabled=yes
+
+- set_fact: scm_new_port={{ "{{ scm_port_tls }}" if scm_web_tls==True else "{{ scm_port }}" }}
+
+- name: wait cloudera-scm-server
+  wait_for:
+    host={{ hostvars[scm_hostname]['inventory_hostname'] }}
+    port={{ scm_new_port }}
+    delay=5
+    state=started
+    timeout=300
+
+- set_fact: cm_api_url={{ "https://{{ hostvars[scm_hostname]['inventory_hostname'] }}:{{ scm_port_tls }}" if scm_web_tls==True else "http://{{ hostvars[scm_hostname]['inventory_hostname'] }}:{{ scm_port }}" }}
+
+- name: Get Cloudera Manager API version
+  uri:
+    url: "{{ cm_api_url }}/api/version"
+    method: GET
+    status_code: 200
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    force_basic_auth: yes
+    return_content: yes
+  register: result
+
+- set_fact: cm_api_url="{{ cm_api_url }}/api/{{ result.content }}"
 
 # https://cloudera.github.io/cm_api/apidocs/v13/path__cm_commands_importAdminCredentials.html
 - name: Import KDC admin credentials

@@ -1,0 +1,75 @@
+---
+
+mysql_datadir: /logs/mysql
+mysql_socket: /logs/mysql/mysql.sock
+mysql_port: 1521
+mysql_log_bin: /logs/mysql/mysql_binary_log
+mysql_log: /var/log/mysqld.log
+mysql_pid_dir: /var/run/mysqld
+mysql_pid_file: "{{ mysql_pid_dir }}/mysqld.pid"
+mysql_root_password: changeme
+
+databases:
+  scm:
+    name: 'scm'
+    user: 'scm'
+    pass: changeme
+    type: 'oracle'
+    host: '<host>'
+    port: '1521'
+  amon:
+    name: 'amon'
+    user: 'amon'
+    pass: changeme
+    type: 'oracle'
+    host: '<host>'
+    port: '1521'
+  rman:
+    name: 'repman'
+    user: 'repman'
+    pass: changeme
+    type: 'oracle'
+    host: '<host>'
+    port: '1521'
+  nav:
+    name: 'nav'
+    user: 'nav'
+    pass: changeme
+    type: 'oracle'
+    host: '<host>'
+    port: '1521'
+  navms:
+    name: 'navms'
+    user: 'navms'
+    pass: changeme
+    type: 'oracle'
+    host: '<host>'
+    port: '1521'
+  metastore:
+    name: 'metastore'
+    user: 'metastore'
+    pass: changeme
+    type: 'oracle'
+    host: '<host>'
+    port: '1521'
+  sentry:
+    name: 'sentry'
+    user: 'sentry'
+    pass: changeme
+    type: 'oracle'
+    host: '<host>'
+    port: '1521'
+  hue:
+    name: 'hue'
+    user: 'hue'
+    pass: changeme
+    type: 'oracle'
+    host: '<host>'
+    port: '1521'
+  oozie:
+    name: 'oozie'
+    user: 'oozie'
+    pass: changeme
+    type: 'oracle'
+    host: '<host>'
+    port: '1521'

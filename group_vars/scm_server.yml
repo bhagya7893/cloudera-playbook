@@ -1,14 +1,55 @@
 ---
 
-scm_version: 5.8.3
+scm_version: 6.3.0
 scm_port: 7180
-scm_default_user: admin
-scm_default_pass: admin
+scm_port_tls: 7183
+scm_hostname: "{{ hostvars[groups['scm_server'][0]]['inventory_hostname'] }}"
+scm_dir: /opt/cloudera/cm
+scm_web_tls: True
+banner_text: "Ansible Cluster Build"
+banner_colour: RED
+
+yum_repo_base: http://<host>/RPMS/
 
 scm_repositories:
-  - http://archive.cloudera.com/cdh5/parcels/5.8.3/
-  - https://archive.cloudera.com/cdh5/parcels/{latest_supported}/
+  - http://<host>/PARCELS/CDH6.2/ 
+  - http://<host>/PARCELS/KTS/6.1.0/
+  - http://<host>/PARCELS/KMS/6.1.0/
+  - http://<host>/PARCELS/ANACONDA/4.4.1/
+#  - http://<host>/PARCELS/Oracle/134/
+
+scm_csd:
+  - http://<host>/CSD/CLOUDERA_DATA_SCIENCE_WORKBENCH-CDH5-1.4.2.jar
+#  - http://<host>/CSD/SPARK2_ON_YARN-2.3.0.cloudera4.jar
 
 scm_products:
   - product: CDH
-    version: 5.8.3-1.cdh5.8.3.p0.2
+    version: 6.2.0-1.cdh6.2.0.p0.967373
+
+ # - product: KAFKA
+ #   version: 4.0.0-1.4.0.0.p0.1
+  
+  - product: KEYTRUSTEE
+    version: 6.1.0-1.KEYTRUSTEE6.1.0.p0.592714
+
+#  - product: ORACLE_INSTANT_CLIENT
+#    version: 11.2-1.oracleinstantclient1.0.0.p0.134
+
+  - product: KEYTRUSTEE
+    version: 6.1.0-1.KEYTRUSTEE6.1.0.p0.592714
+
+kts_products:
+  - product: KEYTRUSTEE_SERVER
+    version: 6.1.0-1.keytrustee6.1.0.p0.592761
+
+  - product: CDH
+    version: 6.2.0-1.cdh6.2.0.p0.967373
+
+oom_heap_dump_dir: /logs/heapdumps
+eventserver_index_dir: /logs/cloudera-scm-eventserver
+hmon_firehose_storage_dir: /logs/cloudera-host-monitor
+navms_data_dir: /logs/cloudera-scm-navigator
+headlamp_scratch_dir: /logs/cloudera-scm-headlamp
+smon_firehose_storage_dir: /logs/cloudera-service-monitor
+nav_auditstream_filename_pattern: /var/log/cloudera-audit/audit_%d{yyyyMMdd}.evt
+nav_auditstream_directory: /var/log/cloudera-audit

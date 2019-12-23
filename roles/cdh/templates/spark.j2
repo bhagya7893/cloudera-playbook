@@ -5,17 +5,56 @@
     {
       "name": "yarn_service",
       "ref": "YARN-1"
+    }, {
+      "name" : "spark_authenticate",
+      "value" : "true"
+    }, {
+      "name" : "spark-conf/spark-env.sh_service_safety_valve",
+      "value" : "export PYSPARK_PYTHON=/opt/cloudera/parcels/Anaconda/bin/python\nexport PYSPARK_DRIVER_PYTHON=/opt/cloudera/parcels/Anaconda/bin/python"
     }
   ],
   "roleConfigGroups": [
     {
       "refName": "SPARK_ON_YARN-1-GATEWAY-BASE",
       "roleType": "GATEWAY",
+      "configs" : [  {
+        "name" : "lineage_event_log_dir",
+        "value" : "{{ log_base }}/spark/lineage"
+      }, {
+        "name" : "spark-conf/spark-defaults.conf_client_config_safety_valve",
+        "value" : "spark.shuffle.encryption.enabled=true\nspark.shuffle.encryption.keySizeBits=256\nspark.network.sasl.serverAlwaysEncrypt=true\nspark.authenticate.enableSaslEncryption=true"
+      }, {
+        "name" : "spark_network_encryption_enabled",
+        "value" : "true"
+      }, {
+        "name" : "spark-conf/spark-env.sh_client_config_safety_valve",
+        "value" : "export PYSPARK_PYTHON=/opt/cloudera/parcels/Anaconda/bin/python\nexport PYSPARK_DRIVER_PYTHON=/opt/cloudera/parcels/Anaconda/bin/python"
+      } ],
       "base": true
     }, {
       "refName": "SPARK_ON_YARN-1-SPARK_YARN_HISTORY_SERVER-BASE",
       "roleType": "SPARK_YARN_HISTORY_SERVER",
-      "configs": [],
+      "configs": [
+      {
+        "name" : "log_dir",
+        "value" : "{{ log_base }}/spark"
+      }, {
+        "name" : "history_server_max_heapsize",
+        "value" : "3221225472"
+      }
+      {% if (cdh_tls) %}
+      , {
+        "name" : "ssl_server_keystore_location",
+        "value" : "{{ tls.keystore_path }}"
+      }, {
+        "name" : "ssl_enabled",
+        "value" : "true"
+      }, {
+        "name" : "ssl_server_keystore_password",
+        "value" : "{{ tls.keystore_password }}"
+      }
+    {% endif %}
+      ],
       "base": true
     }
   ]

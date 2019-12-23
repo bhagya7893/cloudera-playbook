@@ -1,0 +1,40 @@
+---
+
+- name: Start CM agents on all nodes
+  hosts: cdh_servers:scm_server:kts_servers:kms_servers
+  tasks:
+    - shell: "service cloudera-scm-agent start"
+
+- name: Hard Stop CM agents on all nodes
+  hosts: cdh_servers:scm_server:kts_servers:kms_servers
+  tasks:
+    - shell: "systemctl stop supervisord"
+
+- name: Delete CM agent run directories on all nodes
+  hosts: cdh_servers:scm_server:kts_servers:kms_servers
+  tasks:
+    - shell: "rm /var/run/cloudera-scm-agent/process/* -rf"
+
+- name: Delete CM agent directories on all nodes
+  hosts: cdh_servers:scm_server:kts_servers:kms_servers
+  tasks:
+    - shell: "rm /var/lib/cloudera-scm-agent/* -rf"
+
+- name: Stop SCM server
+  hosts: scm_server
+  tasks:
+    - systemd:
+       name: cloudera-scm-server
+       state: stopped 
+
+- name: Delete SCM and Navigator directories on SCM server
+  hosts: scm_server 
+  tasks:
+    - shell: "rm /var/lib/cloudera-scm-server/* -rf"
+    - shell: "rm /var/lib/cloudera-scm-navigator/* -rf"
+
+- name: Drop databases
+  hosts: db_server
+  tasks:
+    - include_vars: "{{ inventory_dir }}/group_vars/db_server.yml"
+    - mysql_db: login_user=root login_password={{ mysql_root_password }} name=scm state=absent config_file=/etc/my.cnf login_unix_socket={{ mysql_socket }}

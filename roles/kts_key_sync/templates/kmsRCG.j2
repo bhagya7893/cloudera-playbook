@@ -1,0 +1,46 @@
+{
+      "config" : {
+        "items": [ {
+          "name" : "cloudera_trustee_keyprovider_hostname-ACTIVE",
+          "value" : "{{ hostvars[groups['kts_servers'][0]]['inventory_hostname'] }}"
+        }, {
+        {% if (cdh_tls) %}
+          "name" : "ssl_server_keystore_location",
+          "value" : "{{ tls.keystore_path }}"
+        }, {
+          "name" : "ssl_client_truststore_password",
+          "value" : "{{ tls.truststore_password }}"
+        }, {
+          "name" : "cloudera_trustee_keyprovider_hostname-PASSIVE",
+          "value" : "{{ hostvars[groups['kts_servers'][1]]['inventory_hostname'] }}"
+        }, {
+          "name" : "ssl_server_keystore_password",
+          "value" : "{{ tls.keystore_password }}"
+        }, {
+          "name" : "ssl_server_keystore_keypassword",
+          "value" : "{{ tls.keystore_password }}"
+        }, {
+          "name" : "ssl_enabled",
+          "value" : "true"
+        }, {
+          "name" : "ssl_client_truststore_location",
+          "value" : "{{ tls.truststore_path }}"
+        }, {
+        {% endif %}
+          "name" : "cloudera_trustee_keyprovider_org",
+          "value" : "{{ kts_org_name }}"
+        }, {
+          "name" : "cloudera_trustee_keyprovider_auth",
+          "value" : "{{ kts_auth_secret }}"
+        }, {
+          "name" : "hadoop_security_key_provider_dir",
+          "value" : "{{ kms_key_dir }}"
+        }, {
+          "name" : "keytrustee_security_key_provider_conf_dir",
+          "value" : "{{ kms_conf_dir }}"
+        }, {
+          "name" : "kms-acls.xml_role_safety_valve",
+          "value" : "<!-- Set by kms_encryption_zones role. Do not edit here --><property><name>hadoop.kms.acl.CREATE</name><value>nobody</value></property>"
+        } ]
+      } 
+} 

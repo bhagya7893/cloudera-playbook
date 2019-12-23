@@ -1,0 +1,15 @@
+---
+
+- include_vars: "{{ inventory_dir }}/group_vars/db_server.yml"
+
+- name: Oracle drop object PL/SQL
+  copy:
+    backup: no
+    src: drop.sql
+    dest: "{{ tmp_dir }}/drop.sql"
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: Drop Cloudera Manager database
+  shell: "export LD_LIBRARY_PATH=/usr/lib/oracle/12.2/client64/lib; /usr/lib/oracle/12.2/client64/bin/sqlplus {{ databases.scm.user }}/{{ databases.scm.pass }}@{{ databases.scm.host }}:{{ databases.scm.port }}/{{ databases.scm.name }} @{{ tmp_dir }}/drop.sql"

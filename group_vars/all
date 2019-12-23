@@ -2,9 +2,13 @@
 
 ansible_become: true
 tmp_dir: /tmp
-krb5_realm: AD.SEC.CLOUDERA.COM
+agent_tls: true
+krb5_realm: MIT.EXAMPLE.COM
 ad_domain: "{{ krb5_realm.lower() }}"
-computer_ou: ou=Hosts,ou=morhidi,ou=HadoopClusters,ou=morhidi,dc=ad,dc=sec,dc=cloudera,dc=com
-domain: vpc.cloudera.com
-kdc: w2k8-1.ad.sec.cloudera.com
+computer_ou: OU=computer_hosts,OU=hadoop_prd,DC=ad,DC=sec,DC=example,DC=com 
+domain: MIT.EXAMPLE.COM
+kdc: mit.example.com
 admin_server: w2k8-1.ad.sec.cloudera.com
+enc_types: rc4-hmac DES-CBC-MD5 DES-CBC-CRC
+ad_account_prefix: prefix_
+kdc_account_creation_host_override: w2k8-1.ad.sec.cloudera.com

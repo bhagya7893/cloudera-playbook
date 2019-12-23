@@ -1,0 +1,92 @@
+---
+# Cloudera playbook teardown
+
+
+#- name: CDH Teardown
+#  hosts: scm_server
+#  roles:
+#    - cdh_teardown
+#  tags: cdh_teardown
+
+- name: Datanode Dir teardown
+  hosts: cdh_servers
+  roles:
+    - dn_dir_teardown
+  tags: dn_dir_teardown
+
+- name: Masternode Dir teardown
+  hosts: master_servers
+  roles:
+    - mn_dir_teardown
+  tags: mn_dir_teardown
+
+- name: Kafka Dir teardown
+  hosts: cdh_servers
+  roles:
+    - kafka_dir_teardown
+  tags: kafka_dir_teardown
+
+- name: KTS Dir teardown
+  hosts: kts_servers
+  roles:
+    - kts_dir_teardown
+  tags: kts_dir_teardown
+
+- name: KMS Dir teardown
+  hosts: kms_servers
+  roles:
+    - kms_dir_teardown
+  tags: kms_dir_teardown
+
+- name: CDH DB teardown
+  hosts: scm_server
+  tasks:
+    - include_vars: "{{ inventory_dir }}/group_vars/db_server.yml"
+  roles:
+    - { role: db_teardown_mysql_cdh, when: database_type == 'mysql' }
+    - { role: db_teardown_postgres_cdh, when: database_type == 'postgres' }
+    - { role: db_teardown_oracle_cdh, when: database_type == 'oracle' }
+  tags: db_teardown_cdh
+
+- name: Remove HAProxy
+  hosts: haproxy
+  roles:
+    - haproxy_teardown
+  tags: haproxy_teardown
+                    
+- name: CM Agent teardown
+  hosts: cdh_servers:scm_server:kts_servers:kms_servers
+  roles:
+    - cm_agents_teardown
+  tags: cm_agents_teardown
+
+- name: CM Server teardown
+  hosts: scm_server
+  roles:
+    - cm_server_teardown
+  tags: cm_server_teardown
+
+- name: CM DB teardown
+  hosts: db_server
+  tasks:
+    - { include_vars: "{{ inventory_dir }}/group_vars/db_server_mysql.yml", when: database_type == 'mysql' }
+    - { include_vars: "{{ inventory_dir }}/group_vars/db_server_postgres.yml", when: database_type == 'postgres' }
+    - { include_vars: "{{ inventory_dir }}/group_vars/db_server_oracle.yml", when: database_type == 'oracle' }
+  roles:
+    - { role: db_teardown_mysql_cm, when: database_type == 'mysql' }
+    - { role: db_teardown_postgres_cm, when: database_type == 'postgres' }
+    - { role: db_teardown_oracle_cm, when: database_type == 'oracle' }
+  tags: db_teardown_cm
+
+- name: CM server yum package removal
+  hosts: scm_server
+  roles:
+    - { role: yum_teardown_cm_server, when: full_teardown == 'True' }
+  tags: yum_teardown_cm_server
+
+- name: CM agent yum package removal
+  hosts: cdh_servers:kts_servers:kms_servers
+  roles:
+    - { role: yum_teardown_cm_agent, when: full_teardown == 'True' }
+  tags: yum_teardown_cm_agent
+

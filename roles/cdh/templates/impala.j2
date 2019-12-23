@@ -1,73 +1,167 @@
 {
-  "refName": "IMPALA-1",
-  "serviceType": "IMPALA",
-  "serviceConfigs": [
-    {
-      "name": "impala_cmd_args_safety_valve",
-      "value": ""
+    "refName" : "IMPALA-1",
+    "serviceType" : "IMPALA",
+    "serviceConfigs" : [ {
+      "name" : "hbase_service",
+      "ref" : "HBASE-1"
     }, {
-      "name": "hdfs_service",
-      "ref": "HDFS-1"
+      "name" : "admission_control_enabled",
+      "value" : "true"
     }, {
-      "name": "admission_control_enabled",
-      "value": "true"
+      "name" : "hdfs_service",
+      "ref" : "HDFS-1"
     }, {
-      "name": "sentry_service",
-      "ref": "SENTRY-1"
+      "name" : "hive_service",
+      "ref" : "HIVE-1"
     }, {
-      "name": "kerberos_reinit_interval",
-      "value": "10"
+      "name" : "all_admission_control_enabled",
+      "value" : "false"
     }, {
-      "name": "enable_core_dump",
-      "value": "true"
-    }, {
-      "name": "hive_service",
-      "ref": "HIVE-1"
-    }, {
-      "name": "all_admission_control_enabled",
-      "value": "true"
+      "name" : "sentry_service",
+      "ref" : "SENTRY-1"
     }
-  ],
-  "roleConfigGroups": [
-    {
-      "refName": "IMPALA-1-IMPALAD-BASE",
-      "roleType": "IMPALAD",
-      "configs": [
-        {
-          "name": "enable_audit_event_log",
-          "value": "true"
-        }, {
-          "name": "scratch_dirs",
-          "variable": "SCRATCH_DIRS"
-        }, {
-          "name": "logbuflevel",
-          "value": "-1"
-        }
-      ],
-      "base": true
+    {% if (cdh_tls) %}
+    ,{
+      "name" : "ssl_client_ca_certificate",
+      "value" : "{{ tls.cert_chain }}"
     }, {
-      "refName": "IMPALA-1-CATALOGSERVER-BASE",
-      "roleType": "CATALOGSERVER",
-      "configs": [
-        {
-          "name": "logbuflevel",
-          "value": "-1"
-        }, {
-          "name": "catalogd_embedded_jvm_heapsize",
-          "value": "603979776"
-        }
-      ],
-      "base": true
+      "name" : "ssl_private_key",
+      "value" : "{{ tls.private_key }}"
     }, {
-      "refName": "IMPALA-1-STATESTORE-BASE",
-      "roleType": "STATESTORE",
-      "configs": [
-        {
-          "name": "logbuflevel",
-          "value": "-1"
-        }
-      ],
-      "base": true
+      "name" : "ssl_server_certificate",
+      "value" : "{{ tls.tls_cert }}"
+    }, {
+      "name" : "client_services_ssl_enabled",
+      "value" : "true"
+    }, {
+      "name" : "ssl_private_key_password",
+      "value" : "{{ tls.keystore_password }}"
     }
-  ]
-}
+    {% endif %}
+    ],
+    "roleConfigGroups" : [ {
+      "refName" : "IMPALA-1-IMPALAD-BASE",
+      "roleType" : "IMPALAD",
+      "configs" : [ {
+        "name" : "disk_spill_encryption",
+        "value" : "true"
+      }, {
+        "name" : "log_dir",
+        "value" : "{{ log_base }}/impalad"
+      }, {
+        "name" : "audit_event_log_dir",
+        "value" : "{{ log_base }}/impalad/audit"
+      }, {
+        "name" : "lineage_event_log_dir",
+        "value" : "{{ log_base }}/impalad/lineage"
+      }, {
+        "name" : "core_dump_dir",
+        "value" : "{{ log_base }}/impalad"
+      }, {
+        "name" : "minidump_path",
+        "value" : "{{ log_base }}/impala-minidumps"
+      }, {
+        "name" : "default_query_options",
+        "value" : "query_timeout_s=0"
+      }, {
+        "name" : "impalad_memory_limit",
+        "value" : "75161927680"
+      }, {
+        "name" : "enable_audit_event_log",
+        "value" : "true"
+      }, {
+        "name" : "scratch_dirs",
+        "variable" : "IMPALA_SCRATCH_DIRS"
+      }, {
+        "name" : "impalad_load_balancer",
+        "value" : "{{ hostvars[groups['haproxy'][0]]['inventory_hostname'] }}:25004"
+      }, {
+        "name" : "impalad_cmd_args_safety_valve",
+        "value" : "-inc_stats_size_limit_bytes=800000000"
+      }
+      {% if (cdh_tls) %}
+      , {
+        "name" : "webserver_private_key_password_cmd",
+        "value" : "{{ tls.keystore_password }}"
+      }, {
+        "name" : "webserver_certificate_file",
+        "value" : "{{ tls.tls_cert }}"
+      }, {
+        "name" : "webserver_private_key_file",
+        "value" : "{{ tls.private_key }}"
+      }
+      {% endif %}
+      ],
+      "base" : true
+    }, {
+      "refName" : "IMPALA-1-STATESTORE-BASE",
+      "roleType" : "STATESTORE",
+      "configs" : [ {
+        "name" : "statestore_cmd_args_safety_valve",
+        "value" : "--convert_legacy_hive_parquet_utc_timestamps=true"
+      }, {
+        "name" : "log_dir",
+        "value" : "{{ log_base }}/statestore"
+      }, {
+        "name" : "core_dump_dir",
+        "value" : "{{ log_base }}/statestore"
+      }, {
+        "name" : "minidump_path",
+        "value" : "{{ log_base }}/impala-minidumps"
+      }
+      {% if (cdh_tls) %}
+      , {
+        "name" : "webserver_private_key_password_cmd",
+        "value" : "{{ tls.keystore_password }}"
+      }, {
+        "name" : "webserver_private_key_file",
+        "value" : "{{ tls.private_key }}"
+      }, {
+        "name" : "webserver_certificate_file",
+        "value" : "{{ tls.tls_cert }}"
+      }
+      {% endif %}
+      ],
+      "base" : true
+    }, {
+      "refName" : "IMPALA-1-CATALOGSERVER-BASE",
+      "roleType" : "CATALOGSERVER",
+      "configs" : [ {
+        "name" : "catalogd_embedded_jvm_heapsize",
+        "value" : "33800047616"
+      }, {
+        "name" : "log_dir",
+        "value" : "{{ log_base }}/catalogd"
+      }, {
+        "name" : "core_dump_dir",
+        "value" : "{{ log_base }}/catalogd"
+      }, {
+        "name" : "minidump_path",
+        "value" : "{{ log_base }}/impala-minidumps"
+      }, {
+        "name" : "oom_heap_dump_enabled",
+        "value" : "false"
+      }, {
+        "name" : "load_catalog_in_background",
+        "value" : "true"
+      }
+      , {
+        "name" : "catalogd_cmd_args_safety_valve",
+        "value" : "-inc_stats_size_limit_bytes=800000000"
+      }
+      {% if (cdh_tls) %}
+      ,{
+        "name" : "webserver_private_key_password_cmd",
+        "value" : "{{ tls.keystore_password }}"
+      }, {
+        "name" : "webserver_private_key_file",
+        "value" : "{{ tls.private_key }}"
+      }, {
+        "name" : "webserver_certificate_file",
+        "value" : "{{ tls.tls_cert }}"
+      }
+      {% endif %}
+       ],
+      "base" : true
+    } ]
+  }

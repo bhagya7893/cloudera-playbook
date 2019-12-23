@@ -1,0 +1,351 @@
+---
+
+- include_vars: "{{ inventory_dir }}/group_vars/scm_server.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/scm_server_enc.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/cdh_servers.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/all"
+- include_vars: "{{ inventory_dir }}/group_vars/tls_enc.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/kms_servers.yml"
+
+- name: Set Keytrustee directory permissions
+  file:
+    path: /var/opt/cloudera/keytrustee
+    mode: '0700'
+    owner: keytrustee
+    group: keytrustee
+    state: directory
+
+- name: Prepare local directories for kts files
+  local_action:
+    module: file
+    path: "/tmp/kts/"
+    owner: root
+    group: root
+    state: directory
+    mode: 0777
+    recurse: yes
+
+- name: Fetch key files from Active KTS
+  fetch:
+    src: "{{ kts_services[0].keytrustee_server_keytrustee_home }}/{{ item }}"
+    dest: "/tmp/kts/"
+    fail_on_missing: no
+  delegate_to: "{{ hostvars[groups['kts_servers'][0]]['inventory_hostname'] }}"
+  with_items:
+    - gpg.conf
+    - keytrustee.conf
+    - logging.conf
+    - pubring.gpg
+    - pubring.gpg~
+    - random_seed
+    - secring.gpg
+    - trustdb.gpg
+
+- name: Copy key files to passive KTS
+  copy:
+   src: "/tmp/kts/{{ hostvars[groups['kts_servers'][0]]['inventory_hostname'] }}{{ kts_services[0].keytrustee_server_keytrustee_home }}/"
+   dest: "{{ kts_services[0].keytrustee_server_keytrustee_home }}"
+   owner: keytrustee
+   group: keytrustee
+   mode: '0600'
+
+- name: Delete local directories for kts files
+  local_action:
+    module: file
+    path: "/tmp/kts/"
+    owner: root
+    group: root
+    state: absent
+  run_once: true
+
+- name: Permission key files
+  file:
+    path: "{{ kts_services[0].keytrustee_server_keytrustee_home }}/logging.conf"
+    mode: '0644'
+
+- name: Run ktadmin on Passive KTS
+  shell: "ktadmin init --confdir {{ kts_services[0].keytrustee_server_keytrustee_home }}/"
+  register: ktadmin_output
+  delegate_to: "{{ hostvars[groups['kts_servers'][1]]['inventory_hostname'] }}"
+  run_once: true
+
+- set_fact: cm_api_url={{ "https://{{ hostvars[scm_hostname]['inventory_hostname'] }}:{{ scm_port_tls }}" if scm_web_tls==True else "http://{{ hostvars[scm_hostname]['inventory_hostname'] }}:{{ scm_port }}" }}
+
+- name: Get Cloudera Manager API version
+  uri:
+    url: "{{ cm_api_url }}/api/version"
+    method: GET
+    status_code: 200
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    force_basic_auth: yes
+    return_content: yes
+  register: result
+
+- set_fact: cm_api_url="{{ cm_api_url }}/api/{{ result.content }}"
+ 
+- name:
+  uri:
+    url: "{{ cm_api_url }}/clusters/{{ kts_display_name }}/commands/start"
+    method: POST
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: kts_resp
+  run_once: true
+
+- set_fact: command_id="{{ kts_resp.json.id }}"
+
+- name: Wait for cluster to start
+  uri:
+    url: "{{ cm_api_url }}/commands/{{ command_id }}"
+    body_format: json
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: cluster_start_result
+  until: cluster_start_result.json.active == false
+  retries: 5
+  delay: 30
+  run_once: true
+
+- name: Setup KTS Sync Replication HA
+  uri:
+    url: "{{ cm_api_url }}/clusters/{{ kts_display_name }}/services/keytrustee_server/commands/SetupSyncReplicationCommand"
+    method: POST
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: kts_sync_resp
+  run_once: true
+
+- set_fact: command_id="{{ kts_sync_resp.json.id }}"
+
+- name: Wait for sync to complete
+  uri:
+    url: "{{ cm_api_url }}/commands/{{ command_id }}"
+    body_format: json
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: cluster_start_result
+  until: cluster_start_result.json.active == false
+  retries: 5
+  delay: 30
+  run_once: true
+
+- name: Restart KTS Cluster
+  uri:
+    url: "{{ cm_api_url }}/clusters/{{ kts_display_name }}/services/keytrustee_server/commands/restart"
+    method: POST
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: kts_resp
+  run_once: true
+
+- set_fact: command_id="{{ kts_resp.json.id }}"
+
+- name: Wait for cluster to start
+  uri:
+    url: "{{ cm_api_url }}/commands/{{ command_id }}"
+    body_format: json
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: cluster_start_result
+  until: cluster_start_result.json.active == false
+  retries: 5
+  delay: 30
+  run_once: true
+
+- name: Add KTS Org
+  shell: "keytrustee-orgtool add -n {{ kts_org_name }} -c admin@admin.com  --confdir {{ kts_services[0].keytrustee_server_keytrustee_home }}/"
+  delegate_to: "{{ hostvars[groups['kts_servers'][0]]['inventory_hostname'] }}"
+  run_once: true
+  register: KTS_org
+
+- name: Get KTS auth_secret
+  shell: "keytrustee-orgtool --confdir {{ kts_services[0].keytrustee_server_keytrustee_home }}/ list"
+  delegate_to: "{{ hostvars[groups['kts_servers'][0]]['inventory_hostname'] }}"
+  run_once: true
+  register: KTS_auth
+
+
+- set_fact: 
+    kts_auth_json: "{{ KTS_auth.stdout | from_json }}"
+
+- debug: var=kts_auth_json
+- debug: var=kts_org_name
+- set_fact:
+    kts_auth_secret: "{{ kts_auth_json[kts_org_name].auth_secret }}"
+
+- debug: var=kts_auth_secret
+
+- name: Get SCM hostIds for inventory hosts
+  become: true
+  action: scm_hosts
+  register: scm_hosts_result
+  vars:
+    use_tls: True
+ # environment:
+ #  PYTHONPATH: "{{ ansible_env.PYTHONPATH }}:/usr/lib/python2.7/site-packages/cm_api-19.0.0-py2.7.egg"
+
+- set_fact: scm_host_ids="{{ scm_hosts_result.host_ids }}"
+
+- set_fact: scm_host_names="{{ scm_hosts_result.host_names }}"
+
+- name: Prepare hosts template
+  local_action:
+    module: template
+    src: "kmshosts.j2"
+    dest: "{{ tmp_dir }}/kmshosts.json"
+    mode: 0777
+
+- name: Add KMS Hosts to CDH Cluster
+  uri:
+    url: "{{ cm_api_url }}/clusters/{{ cluster_display_name }}/hosts/"
+    method: POST
+    body_format: json
+    body: "{{ lookup('file', ''+ tmp_dir + '/kmshosts.json') }}"
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  run_once: true
+  register: kmshosts_resp
+
+- name: Prepare KMS template
+  local_action:
+    module: template
+    src: "kms.j2"
+    dest: "{{ tmp_dir }}/kms.json"
+    mode: 0777
+
+- name: Create KMS Service
+  uri:
+    url: "{{ cm_api_url }}/clusters/{{ cluster_display_name }}/services/"
+    method: POST
+    body_format: json
+    body: "{{ lookup('file', ''+ tmp_dir + '/kms.json') }}"
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  run_once: true
+  register: kms_resp
+
+- name: Prepare KMS Role Config Group template
+  local_action:
+    module: template
+    src: "kmsRCG.j2"
+    dest: "{{ tmp_dir }}/kmsRCG.json"
+    mode: 0777
+
+- name: Create KMS Role Config Group
+  uri:
+    url: "{{ cm_api_url }}/clusters/{{ cluster_display_name }}/services/keytrustee/roleConfigGroups/keytrustee-KMS_KEYTRUSTEE-BASE"
+    method: PUT
+    body_format: json
+    body: "{{ lookup('file', ''+ tmp_dir + '/kmsRCG.json') }}"
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  run_once: true
+  register: kms2_resp
+
+- name: Prepare HDFS template
+  local_action:
+    module: template
+    src: "hdfs.j2"
+    dest: "{{ tmp_dir }}/hdfs.json"
+    mode: 0777
+
+- name: Update HDFS settings
+  uri:
+    url: "{{ cm_api_url }}/clusters/{{ cluster_display_name }}/services/hdfs/config"
+    method: PUT
+    body_format: json
+    body: "{{ lookup('file', ''+ tmp_dir + '/hdfs.json') }}"
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  run_once: true
+  register: hdfs_resp
+
+- name: Check CDH parcel is activated on all hosts
+  uri:
+    url: "{{ cm_api_url }}/clusters/{{ cluster_display_name }}/parcels/products/CDH/versions/6.2.0-1.cdh6.2.0.p0.967373/"
+    method: GET
+    status_code: 200,404
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: cdh_parcel_result
+  until: cdh_parcel_result.json.stage == "ACTIVATED"
+  retries: 25
+  delay: 30
+  run_once: true
+
+- name: Check KEYTRUSTEE parcel is activated on all hosts
+  uri:
+    url: "{{ cm_api_url }}/clusters/{{ cluster_display_name }}/parcels/products/KEYTRUSTEE/versions/6.1.0-1.KEYTRUSTEE6.1.0.p0.592714/"
+    method: GET
+    status_code: 200,404
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: kms_parcel_result
+  until: kms_parcel_result.json.stage == "ACTIVATED"
+  retries: 25
+  delay: 5
+  run_once: true
+
+- name: Restart KMS Service
+  uri:
+    url: "{{ cm_api_url }}/clusters/{{ cluster_display_name }}/services/keytrustee/commands/start"
+    method: POST
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: kms_start_resp
+  run_once: true
+
+- set_fact: command_id="{{ kms_start_resp.json.id }}"
+
+- name: Wait for service to restart
+  uri:
+    url: "{{ cm_api_url }}/commands/{{ command_id }}"
+    body_format: json
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: service_start_result
+  until: service_start_result.json.active == false
+  retries: 25
+  delay: 30
+  run_once: true

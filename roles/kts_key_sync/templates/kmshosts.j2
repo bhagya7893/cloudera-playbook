@@ -1,0 +1,11 @@
+{
+  "items" : [ 
+    {
+      "hostId" : "{{ scm_host_ids[hostvars[groups['kms_servers'][0]]['inventory_hostname']] }}",
+      "hostname" : "{{ hostvars[groups['kms_servers'][0]]['inventory_hostname'] }}"
+    }, {
+      "hostId" : "{{ scm_host_ids[hostvars[groups['kms_servers'][1]]['inventory_hostname']] }}",
+      "hostname" : "{{ hostvars[groups['kms_servers'][1]]['inventory_hostname'] }}"
+    }
+  ]
+}

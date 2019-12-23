@@ -1,59 +1,179 @@
 {
-  "refName": "HUE-1",
-  "serviceType": "HUE",
-  "serviceConfigs": [
-    {
-      "name": "database_host",
-      "value": "{{ hostvars[db_hostname]['inventory_hostname'] }}"
-    }, {
-      "name": "database_type",
+    "refName" : "HUE-1",
+    "serviceType" : "HUE",
+    "serviceConfigs" : [ {
+      "name" : "database_type",
       "value": "{{ databases.hue.type }}"
     }, {
-      "name": "database_name",
-      "value": "{{ databases.hue.name }}"
+      "name" : "usage_data_collection_enable",
+      "value" : "false"
+    }, {
+      "name" : "database_host",
+      "value": "{{ databases.hue.host }}"
+    }, {
+      "name" : "database_port",
+      "value": "{{ databases.hue.port }}"
+    }, {
+      "name" : "cherrypy_server_threads",
+      "value" : "300"
     }, {
       "name": "database_user",
       "value": "{{ databases.hue.user }}"
     }, {
-      "name": "database_password",
+      "name" : "database_password",
       "value": "{{ databases.hue.pass }}"
     }, {
       "name": "oozie_service",
       "ref": "OOZIE-1"
     }, {
-      "name": "impala_service",
-      "ref": "IMPALA-1"
-    }, {
-      "name": "hive_service",
-      "ref": "HIVE-1"
-    }, {
       "name": "sentry_service",
       "ref": "SENTRY-1"
-    }, {
-      "name": "hue_service_safety_valve",
-      "value": "[impala]\nserver_port=21051\n\n[beeswax]\ndownload_cell_limit=10"
     }, {
       "name": "zookeeper_service",
       "ref": "ZOOKEEPER-1"
     }, {
-      "name": "hue_webhdfs",
-      "ref": "HDFS-HTTPFS-1"
+      "name" : "nt_domain",
+      "value" : "{{ ldap_udom.domain|upper }}"
+    }, {
+      "name" : "group_member_attr",
+      "value" : "{{ ldap_udom.group_member_attr }}"
+    }, {      "name" : "hue_service_safety_valve",
+      "value" : "[hbase]\nhbase_conf_dir={% raw %}{{HBASE_CONF_DIR}}{% endraw %}\nthrift_transport=buffered\n[desktop]\nleaflet_tile_layer=\"{{ cdh_services | json_query('[?type==`hue`].leaflet_tile_layer') | first }}\"\nleaflet_tile_layer_attribution=\"{{ cdh_services | json_query('[?type==`hue`].mapping_attribution') | first }}\"\nsecure_content_security_policy=\"{{ cdh_services | json_query('[?type==`hue`].secure_content_security_policy') | first }}\"\ndisable_hue_3=true\n[[database]]\n{% if (database_type == 'oracle') %}options={\"threaded\":true}{% endif %}\n[[ldap]]\nsync_groups_on_login=true\n[[custom]]\nbanner_top_html='{{ lookup('file', 'hue-banner.txt') }}'\n[useradmin]\nhome_dir_permissions=0700"
+    }, {
+      "name" : "usage_data_collection_enable",
+      "value" : "false"
+    }, {
+      "name" : "search_bind_authentication",
+      "value" : "true"
+    }, {
+      "name" : "user_name_attr",
+      "value" : "{{ ldap_udom.user_name_attr }}"
+    }, {
+      "name" : "cherrypy_server_threads",
+      "value" : "300"
+    }, {
+      "name" : "group_name_attr",
+      "value" : "{{ ldap_udom.group_name_attr }}"
+    }, {
+      "name" : "bind_dn",
+      "value" : "{{ ldap_udom.bind_dn }}"
+    }, {
+      "name" : "ldap_cert",
+      "value" : ""
+    }, {
+      "name" : "base_dn",
+      "value" : "{{ ldap_udom.base_dn }}"
+    }, {
+      "name" : "time_zone",
+      "variable" : "HUE_TIMEZONE"
+    }, {
+      "name" : "audit_event_log_dir",
+      "value" : "{{ log_base }}/hue/audit"
+    }, {
+      "name" : "hive_service",
+      "ref" : "HIVE-1"
+    }, {
+      "name" : "group_filter",
+      "value" : "{{ ldap_udom.group_filter }}"
+    }, {
+      "name" : "user_filter",
+      "value" : "{{ ldap_udom.user_filter }}"
+    }, {
+      "name" : "impala_service",
+      "ref" : "IMPALA-1"
+    }, {
+      "name" : "enable_navmetadataserver",
+      "value" : "false"
+    }, {
+      "name" : "hue_service_env_safety_valve",
+      "value" : "KRB5_KTNAME=/var/lib/hue/hue.keytab"
+    }, {
+      "name" : "bind_password",
+      "value" : "{{ ldap_udom.bind_pass }}"
+    }, {
+      "name" : "ldap_url",
+      "value" : "{{ ldap_udom.url }}"
+    }, {
+      "name" : "auth_backend",
+      "value" : "desktop.auth.backend.LdapBackend,desktop.auth.backend.AllowFirstUserDjangoBackend"
+    }, {
+       "name" : "hbase_service",
+       "ref" : "HBASE-1"
+     }, {
+       "name" : "database_name",
+       "value": "{{ databases.hue.name }}"
+     }, {
+       "name" : "solr_service",
+       "ref" : "SOLR-1"
     }
   ],
   "roleConfigGroups": [
     {
       "refName": "HUE-1-HUE_SERVER-BASE",
       "roleType": "HUE_SERVER",
-      "configs": [],
+      "configs": [ {
+        "name" : "hue_http_port",
+        "value" : "8889"
+      }, {
+        "name" : "hue_server_log_dir",
+        "value" : "{{ log_base }}/hue"
+      }, {
+        "name" : "banner_html",
+        "value" : "Overridden by safety valve"
+      {% if (cdh_tls) %}
+      }, {
+        "name" : "ssl_private_key",
+        "value" : "{{ tls.private_key }}"
+      }, {
+        "name" : "ssl_certificate",
+        "value" : "{{ tls.tls_cert }}"
+      }, {
+        "name" : "ssl_private_key_password",
+        "value" : "{{ tls.keystore_password}}"
+      }, {
+        "name" : "ssl_cacerts",
+        "value" : "{{ tls.cert_chain }}"
+      }, {
+        "name" : "ssl_enable",
+        "value" : "true"
+      {% endif %}
+      } ],
       "base": true
     }
     {% if (krb5_kdc_type == 'ad') or (krb5_kdc_type == 'mit') %}
      , {
       "refName": "HUE-1-KT_RENEWER-BASE",
       "roleType": "KT_RENEWER",
-      "configs": [],
+      "configs": [{
+        "name" : "kt_renewer_log_dir",
+        "value" : "{{ log_base }}/hue"
+      }],
       "base": true
     }
     {% endif %}
-  ]
+    , {
+      "refName" : "HUE-1-HUE_LOAD_BALANCER-BASE",
+      "roleType" : "HUE_LOAD_BALANCER",
+      "configs" : [ 
+      {% if (cdh_tls) %}
+      {
+        "name" : "passphrasefile_location",
+        "value" : "{{ tls.key_password_file}}"
+      }, {
+        "name" : "ssl_certificate",
+        "value" : "{{ tls.tls_cert }}"
+      }, {
+        "name" : "ssl_certificate_key",
+        "value" : "{{ tls.private_key }}"
+      },
+     {% endif %}
+     {
+        "name" : "listen",
+        "value" : "8888"
+     }, { 
+        "name" : "hue_load_balancer_log_dir",
+        "value" : "{{ log_base }}/hue-httpd"
+      }  ],
+     "base" : true 
+   } ]
 }

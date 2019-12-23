@@ -1,0 +1,48 @@
+---
+
+- name: Stop SCM server
+  systemd:
+     name: cloudera-scm-server
+     state: stopped
+
+- name: Delete NAV MS Data Dir
+  file:
+    path: "{{ navms_data_dir }}"
+    state: absent
+  ignore_errors: true
+
+- name: Delete Eventserver Data Dir
+  file:
+    path: "{{ eventserver_index_dir }}"
+    state: absent
+  ignore_errors: true
+
+- name: Delete HMON Data Dir
+  file:
+    path: "{{ hmon_firehose_storage_dir }}"
+    state: absent
+  ignore_errors: true
+
+- name: Delete Headlamp Scratch Data Dir
+  file:
+    path: "{{ headlamp_scratch_dir }}"
+    state: absent
+  ignore_errors: true
+
+- name: Delete SMON Firehouse  Dir
+  file:
+    path: "{{ smon_firehose_storage_dir }}"
+    state: absent
+  ignore_errors: true
+
+- name: Delete CM Server Dir
+  file:
+    path: "/var/lib/cloudera-scm-server"
+    state: absent
+  ignore_errors: true
+
+- name: Delete navigator audit stream directory
+  file:
+    path: "{{ nav_auditstream_directory }}"
+    state: absent
+  ignore_errors: true

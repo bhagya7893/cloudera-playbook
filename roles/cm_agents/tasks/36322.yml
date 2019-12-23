@@ -13,54 +13,48 @@
 - group: name=kms
 - group: name=keytrustee
 - group: name=kudu
-- group: name=llama
 - group: name=mapred
 - group: name=oozie
 - group: name=solr
 - group: name=spark
 - group: name=sentry
 - group: name=sqoop
-- group: name=sqoop2
 - group: name=yarn
 - group: name=zookeeper
 
-- user: name=flume      group=flume      createhome=no system=yes
-- user: name=hbase      group=hbase      createhome=no system=yes
-- user: name=hdfs       group=hdfs       createhome=no system=yes groups=hadoop
-- user: name=hive       group=hive       createhome=no system=yes
-- user: name=httpfs     group=httpfs     createhome=no system=yes
-- user: name=hue        group=hue        createhome=no system=yes
-- user: name=impala     group=impala     createhome=no system=yes groups=hive
-- user: name=kafka      group=kafka      createhome=no system=yes
-- user: name=kms        group=kms        createhome=no system=yes
-- user: name=keytrustee group=keytrustee createhome=no system=yes
-- user: name=kudu       group=kudu       createhome=no system=yes
-- user: name=llama      group=llama      createhome=no system=yes
-- user: name=mapred     group=mapred     createhome=no system=yes groups=hadoop
-- user: name=oozie      group=oozie      createhome=no system=yes
-- user: name=solr       group=solr       createhome=no system=yes
-- user: name=spark      group=spark      createhome=no system=yes
-- user: name=sentry     group=sentry     createhome=no system=yes
-- user: name=sqoop      group=sqoop      createhome=no system=yes
-- user: name=sqoop2     group=sqoop      createhome=no system=yes groups=sqoop2
-- user: name=yarn       group=yarn       createhome=no system=yes groups=hadoop
-- user: name=zookeeper  group=zookeeper  createhome=no system=yes
+- user: name=flume      state=present group=flume      createhome=no system=yes home=/var/lib/flume-ng
+- user: name=hbase      state=present group=hbase      createhome=no system=yes home=/var/lib/hbase
+- user: name=hdfs       state=present group=hdfs       createhome=no system=yes home=/var/lib/hadoop-hdfs groups=hadoop
+- user: name=hive       state=present group=hive       createhome=no system=yes home=/var/lib/hive
+- user: name=httpfs     state=present group=httpfs     createhome=no system=yes home=/var/lib/hadoop-httpfs
+- user: name=hue        state=present group=hue        createhome=no system=yes home=/usr/lib/hue
+- user: name=impala     state=present group=impala     createhome=no system=yes home=/var/lib/impala groups=hive
+- user: name=kafka      state=present group=kafka      createhome=no system=yes home=/var/lib/kafka
+- user: name=kms        state=present group=kms        createhome=no system=yes home=/var/lib/kms
+- user: name=keytrustee state=present group=keytrustee createhome=no system=yes home=/var/lib/keytrustee
+- user: name=kudu       state=present group=kudu       createhome=no system=yes home=/var/lib/kudu
+- user: name=mapred     state=present group=mapred     createhome=no system=yes home=/var/lib/hadoop-mapreduce groups=hadoop
+- user: name=oozie      state=present group=oozie      createhome=no system=yes home=/var/lib/oozie
+- user: name=solr       state=present group=solr       createhome=no system=yes home=/var/lib/solr
+- user: name=spark      state=present group=spark      createhome=no system=yes home=/var/lib/spark
+- user: name=sentry     state=present group=sentry     createhome=no system=yes home=/var/lib/sentry
+- user: name=sqoop      state=present group=sqoop      createhome=no system=yes home=/var/lib/sqoop
+- user: name=yarn       state=present group=yarn       createhome=no system=yes home=/var/lib/hadoop-yarn groups=hadoop
+- user: name=zookeeper  state=present group=zookeeper  createhome=no system=yes home=/var/lib/zookeeper
 
-- file: path=/var/lib/flume-ng         state=directory owner=flume     group=flume     mode=0755
-- file: path=/var/lib/hadoop-httpfs    state=directory owner=httpfs    group=httpfs    mode=0755
-- file: path=/var/lib/hadoop-hdfs      state=directory owner=hdfs      group=hdfs      mode=0755
-- file: path=/var/lib/hadoop-yarn      state=directory owner=yarn      group=yarn      mode=0755
-- file: path=/var/lib/hadoop-mapreduce state=directory owner=mapred    group=mapred    mode=0755
-- file: path=/var/lib/hbase            state=directory owner=hbase     group=hbase     mode=0755
-- file: path=/var/lib/hive             state=directory owner=hive      group=hive      mode=0755
-- file: path=/usr/lib/hue              state=directory owner=hue       group=hue       mode=0755
-- file: path=/var/lib/hadoop-kms       state=directory owner=kms       group=kms       mode=0755
-- file: path=/var/lib/oozie            state=directory owner=oozie     group=oozie     mode=0755
-- file: path=/var/lib/sqoop            state=directory owner=sqoop     group=sqoop     mode=0755
-- file: path=/var/lib/zookeeper        state=directory owner=zookeeper group=zookeeper mode=0755
-- file: path=/var/lib/sqoop2           state=directory owner=sqoop2    group=sqoop2    mode=0755
-- file: path=/var/lib/llama            state=directory owner=llama     group=llama     mode=0755
-- file: path=/var/lib/impala           state=directory owner=impala    group=impala    mode=0755
-- file: path=/var/lib/solr             state=directory owner=solr      group=solr      mode=0755
-- file: path=/var/lib/spark            state=directory owner=spark     group=spark     mode=0755
-- file: path=/var/lib/sentry           state=directory owner=sentry    group=sentry    mode=0755
+- file: path=/var/lib/flume-ng         state=directory owner=flume      group=flume      mode=0755
+- file: path=/var/lib/hadoop-httpfs    state=directory owner=httpfs     group=httpfs     mode=0755
+- file: path=/var/lib/hadoop-hdfs      state=directory owner=hdfs       group=hdfs       mode=0755
+- file: path=/var/lib/hadoop-yarn      state=directory owner=yarn       group=yarn       mode=0755
+- file: path=/var/lib/hadoop-mapreduce state=directory owner=mapred     group=mapred     mode=0755
+- file: path=/var/lib/hbase            state=directory owner=hbase      group=hbase      mode=0755
+- file: path=/var/lib/hive             state=directory owner=hive       group=hive       mode=0755
+- file: path=/usr/lib/hue              state=directory owner=hue        group=hue        mode=0755
+- file: path=/var/lib/hadoop-kms       state=directory owner=kms        group=kms        mode=0755
+- file: path=/var/lib/oozie            state=directory owner=oozie      group=oozie      mode=0755
+- file: path=/var/lib/sqoop            state=directory owner=sqoop      group=sqoop      mode=0755
+- file: path=/var/lib/zookeeper        state=directory owner=zookeeper  group=zookeeper  mode=0755
+- file: path=/var/lib/impala           state=directory owner=impala     group=impala     mode=0755
+- file: path=/var/lib/solr             state=directory owner=solr       group=solr       mode=0755
+- file: path=/var/lib/spark            state=directory owner=spark      group=spark      mode=0755
+- file: path=/var/lib/sentry           state=directory owner=sentry     group=sentry     mode=0755

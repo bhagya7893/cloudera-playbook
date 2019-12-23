@@ -1,0 +1,8 @@
+---
+# Cloudera playbook
+
+- name: Install Cloudera Manager roles
+  hosts: scm_server
+  roles:
+    - cm_roles
+  tags: cm_roles_test

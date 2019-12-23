@@ -1,0 +1,24 @@
+---
+
+#- name: Install MySQL JDBC Connector
+#  yum: name=mysql-connector-java state=installed
+
+- name: Create usr share java
+  file: path=/usr/share/java state=directory owner=root group=root mode=0755 
+   
+
+- name: Copy MySQL connector
+  copy:
+    src: mysql-connector-java-8.0.13.jar
+    dest: /usr/share/java/mysql-connector-java.jar
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Copy Oracle connector
+  copy:
+    src: ojdbc8.jar
+    dest: /usr/share/java/oracle-connector-java.jar
+    owner: root
+    group: root
+    mode: '0755'

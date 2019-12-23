@@ -1,0 +1,68 @@
+---
+
+keyAdminGroup: group_hdfs_key
+
+encryption_keys:
+  - key: 
+      keyname: solr-key
+      acl: "solr solr,group_hdfs_super"
+  - key: 
+      keyname: hue-key
+      acl: "hue,hive,oozie hue,oozie,hive,,group_yarn_admin"
+  - key: 
+      keyname: hbase-key
+      acl: "hbase hbase,hive,impala"
+  - key: 
+      keyname: spark-key
+      acl: "*"
+  - key: 
+      keyname: mapred-key
+      acl: "*"
+  - key: 
+      keyname: hive-key
+      acl: "hive hive"
+
+encryption_zones:
+
+  - zone:
+      key: solr-key
+      path: /solr
+      user: solr
+      group: solr
+      mode: 0755
+
+  - zone:
+      key: hue-key
+      path: /user/hue
+      user: hue
+      group: hue
+      mode: 775
+
+  - zone:
+      key: hbase-key
+      path: /hbase
+      user: hbase
+      group: hbase
+      mode: 700
+
+  - zone:
+      key: spark-key
+      path: /user/spark
+      user: spark
+      group: spark
+      mode: 1777
+
+  - zone:
+      key: mapred-key
+      path: /user/history
+      user: mapred
+      group: hadoop
+      mode: 777
+
+  - zone:
+      key: hive-key
+      path: /user/hive/warehouse
+      user: hive
+      group: hive
+      mode: 1775
+

@@ -1,0 +1,36 @@
+---
+
+- include_vars: "{{ inventory_dir }}/group_vars/db_server.yml"
+
+- name: Oracle drop object PL/SQL
+  copy:
+    backup: no
+    src: drop.sql
+    dest: "{{ tmp_dir }}/drop.sql"
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: Drop amon database
+  shell: "export LD_LIBRARY_PATH=/usr/lib/oracle/12.2/client64/lib; /usr/lib/oracle/12.2/client64/bin/sqlplus {{ databases.amon.user }}/{{ databases.amon.pass }}@{{ databases.amon.host }}:{{ databases.amon.port }}/{{ databases.amon.name }} @{{ tmp_dir }}/drop.sql"
+
+- name: Drop hue database
+  shell: "export LD_LIBRARY_PATH=/usr/lib/oracle/12.2/client64/lib; /usr/lib/oracle/12.2/client64/bin/sqlplus {{ databases.hue.user }}/{{ databases.hue.pass }}@{{ databases.hue.host }}:{{ databases.hue.port }}/{{ databases.hue.name }} @{{ tmp_dir }}/drop.sql"
+
+- name: Drop hive metastore database
+  shell: "export LD_LIBRARY_PATH=/usr/lib/oracle/12.2/client64/lib; /usr/lib/oracle/12.2/client64/bin/sqlplus {{ databases.metastore.user }}/{{ databases.metastore.pass }}@{{ databases.metastore.host }}:{{ databases.metastore.port }}/{{ databases.metastore.name }} @{{ tmp_dir }}/drop.sql"
+
+- name: Drop nav database
+  shell: "export LD_LIBRARY_PATH=/usr/lib/oracle/12.2/client64/lib; /usr/lib/oracle/12.2/client64/bin/sqlplus {{ databases.nav.user }}/{{ databases.nav.pass }}@{{ databases.nav.host }}:{{ databases.nav.port }}/{{ databases.nav.name }} @{{ tmp_dir }}/drop.sql"
+
+- name: Drop navms database
+  shell: "export LD_LIBRARY_PATH=/usr/lib/oracle/12.2/client64/lib; /usr/lib/oracle/12.2/client64/bin/sqlplus {{ databases.navms.user }}/{{ databases.navms.pass }}@{{ databases.navms.host }}:{{ databases.navms.port }}/{{ databases.navms.name }} @{{ tmp_dir }}/drop.sql"
+
+- name: Drop oozie database
+  shell: "export LD_LIBRARY_PATH=/usr/lib/oracle/12.2/client64/lib; /usr/lib/oracle/12.2/client64/bin/sqlplus {{ databases.oozie.user }}/{{ databases.oozie.pass }}@{{ databases.oozie.host }}:{{ databases.oozie.port }}/{{ databases.oozie.name }} @{{ tmp_dir }}/drop.sql"
+
+- name: Drop rman database
+  shell: "export LD_LIBRARY_PATH=/usr/lib/oracle/12.2/client64/lib; /usr/lib/oracle/12.2/client64/bin/sqlplus {{ databases.rman.user }}/{{ databases.rman.pass }}@{{ databases.rman.host }}:{{ databases.rman.port }}/{{ databases.rman.name }} @{{ tmp_dir }}/drop.sql"
+
+- name: Drop sentry database
+  shell: "export LD_LIBRARY_PATH=/usr/lib/oracle/12.2/client64/lib; /usr/lib/oracle/12.2/client64/bin/sqlplus {{ databases.sentry.user }}/{{ databases.sentry.pass }}@{{ databases.sentry.host }}:{{ databases.sentry.port }}/{{ databases.sentry.name }} @{{ tmp_dir }}/drop.sql"

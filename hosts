@@ -1,40 +1,68 @@
 # Note for AWS: 'Public DNS' name is too long for ansible_host, use 'Public IP' (https://github.com/ansible/ansible/issues/11536)
 
 [scm_server]
-<host>        license_file=/path/to/cloudera_license.txt
+<host>    license_file=/opt/cloudera_license.txt
 
 [db_server]
 <host>
 
 [krb5_server]
-<host>        default_realm=CLOUDERA.COM
+<host>    default_realm=MIT.EXAMPLE.COM
 
 [utility_servers:children]
 scm_server
 db_server
 krb5_server
 
-[gateway_servers]
-<host>        host_template=HostTemplate-Gateway role_ref_names=HDFS-HTTPFS-1
+[gateway_servers:children]
+gatewayen_servers
+gatewaylb_servers
+
+[gatewayen_servers]
+<host>    host_template=HostTemplate-GatewayEdge
+
+[gatewaylb_servers]
+#<host> host_template=HostTemplate-GatewayLB
+<host>    host_template=HostTemplate-GatewayLB
 
 [master_servers]
-<host>        host_template=HostTemplate-Master1
-<host>        host_template=HostTemplate-Master2
-<host>        host_template=HostTemplate-Master3
+<host>    host_template=HostTemplate-Master1
+<host>    host_template=HostTemplate-Master2
+<host>    host_template=HostTemplate-Master3
 
 [worker_servers]
+<host>
+<host>
 <host>
 <host>
 <host>
 
 [worker_servers:vars]
 host_template=HostTemplate-Workers
+#host_template=HostTemplate-Kafka
+
+[kms_servers]
+#<host>
+#<host>
 
 [cdh_servers:children]
 utility_servers
 gateway_servers
 master_servers
 worker_servers
+kms_servers
+
+[kts_servers]
+#<host> host_template=KeyTrusteeActive
+#<host> host_template=KeyTrusteePassive
+
+[haproxy]
+<host>
 
 [all:vars]
-ansible_user=ec2-user
+# 'ad', 'mit', or 'none' to disable security
+# This value must match that in group_vars/krb5_server.yml
+krb5_kdc_type='ad'
+hdfs_tde_enabled='False'
+database_type='mysql'
+full_teardown='False'

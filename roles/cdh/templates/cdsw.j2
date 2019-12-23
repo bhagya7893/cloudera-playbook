@@ -1,0 +1,67 @@
+{
+    "refName" : "CDSW-1",
+    "serviceType" : "CDSW",
+    "serviceConfigs" : [ {
+      "name" : "hive_service",
+      "ref" : "HIVE-1"
+    }, {
+      "name" : "cdsw.domain.config",
+      "variable" : "CDSW_DOMAIN"
+    }, {
+      "name" : "sentry_service",
+      "ref" : "SENTRY-1"
+    }, {
+      "name" : "yarn_service",
+      "ref" : "YARN-1"
+    }, {
+      "name" : "solr_service",
+      "ref" : "SOLR-1"
+    }, {
+      "name" : "spark_on_yarn_service",
+      "ref" : "SPARK_ON_YARN-1"
+    }, {
+      "name" : "hbase_service",
+      "ref" : "HBASE-1"
+    }, {
+      "name" : "hdfs_service",
+      "ref" : "HDFS-1"
+    }, {
+      "name" : "cdsw.master.ip.config",
+      "variable" : "CDSW_MASTER_IP"
+    } ],
+    "roleConfigGroups" : [ {
+      "refName" : "CDSW-1-CDSW_APPLICATION-BASE",
+      "roleType" : "CDSW_APPLICATION",
+      "configs" : [
+      {% if (cdh_tls) %}
+      {
+        "name" : "cdsw.enable.tls.config",
+        "value" : "true"
+      }, {
+        "name" : "cdsw.tls.cert.config",
+        "value" : "/opt/cloudera/security/x509/localhost.pem"
+      }, {
+        "name" : "cdsw.tls.key.config",
+        "value" : "/opt/cloudera/security/x509/localhost.key.unenc"
+      } 
+      {% endif %}
+      ],
+      "base" : true
+    }, {
+      "refName" : "CDSW-1-CDSW_MASTER-BASE",
+      "roleType" : "CDSW_MASTER",
+      "base" : true
+    }, {
+      "refName" : "CDSW-1-CDSW_WORKER-BASE",
+      "roleType" : "CDSW_WORKER",
+      "base" : true
+    }, {
+      "refName" : "CDSW-1-CDSW_DOCKER-BASE",
+      "roleType" : "CDSW_DOCKER",
+      "configs" : [ {
+        "name" : "cdsw.docker.devices.config",
+        "value" : "/dev/sdd"
+      } ],
+      "base" : true
+    } ]
+  }

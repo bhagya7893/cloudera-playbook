@@ -1,0 +1,8 @@
+---
+
+- name: Remove the Cloudera Manager Agent Packages
+  yum: name={{ item }} state=installed
+  with_items:
+    - "cloudera-manager-daemons-{{ scm_version }}"
+    - "cloudera-manager-agent-{{ scm_version }}"
+

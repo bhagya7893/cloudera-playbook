@@ -1,0 +1,4 @@
+---
+
+- name: DFS Data Dir Delete
+  shell: rm /data/*/dfs/ -rf

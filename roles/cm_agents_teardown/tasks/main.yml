@@ -1,0 +1,134 @@
+---
+- include_vars: "{{ inventory_dir }}/group_vars/cdh_servers.yml"
+
+- name: Stop CM agents on all nodes
+  service:
+    name: cloudera-scm-agent
+    state: stopped
+
+- name: Hard Stop CM agents on all nodes
+  service: 
+    name: supervisord
+    state: stopped
+
+- name: Delete CM agent run directories on all nodes
+  shell: "rm /var/run/cloudera-scm-agent/process/* -rf"
+
+- name: Delete CM agent directories on all nodes
+  shell: "rm /var/lib/cloudera-scm-agent/* -rf"
+
+- name: JN Edits Dir
+  file:
+    path: "{{ cdh_services | json_query (query) }}"
+    state: absent
+  ignore_errors: true
+  vars:
+    query: "[?type=='hdfs'].dfs_journalnode_edits_dir"
+
+- name: Impala Catalog Log Dir
+  file:
+    path: "{{ log_base }}/catalogd"                       
+    state: absent
+  ignore_errors: true
+
+- name: HDFS Log Dir
+  file:
+    path: "{{ log_base }}/hadoop-hdfs"
+    state: absent
+  ignore_errors: true
+  
+- name: HTTPFS Log Dir
+  file:
+    path: "{{ log_base }}/hadoop-httpfs"
+    state: absent
+  ignore_errors: true
+  
+- name: MR Log Dir
+  file:
+    path: "{{ log_base }}/hadoop-mapreduce"
+    state: absent
+  ignore_errors: true
+
+- name: YARN Log Dir
+  file:
+    path: "{{ log_base }}/hadoop-yarn"
+    state: absent
+  ignore_errors: true
+
+- name: HBase Log Dir
+  file:
+    path: "{{ log_base }}/hbase"
+    state: absent
+  ignore_errors: true
+
+- name: HBase Solr Log Dir
+  file:
+    path: "{{ log_base }}/hbase-solr"
+    state: absent
+  ignore_errors: true
+
+- name: Hive Log Dir
+  file:
+    path: "{{ log_base }}/hive"
+    state: absent
+  ignore_errors: true
+
+- name: Hue Log Dir
+  file:
+    path: "{{ log_base }}/hue"
+    state: absent
+  ignore_errors: true
+  
+- name: Hue LB Log Dir
+  file:
+    path: "{{ log_base }}/hue-httpd"
+    state: absent
+  ignore_errors: true
+
+- name: ImpalaD Log Dir
+  file:
+    path: "{{ log_base }}/impalad"
+    state: absent
+  ignore_errors: true
+
+- name: Impala Minidumps Dir
+  file:
+    path: "{{ log_base }}/impala-minidumps"
+    state: absent
+  ignore_errors: true
+
+- name: Oozie Log Dir
+  file:
+    path: "{{ log_base }}/oozie"
+    state: absent
+  ignore_errors: true
+  
+- name: Sentry Log Dir
+  file:
+    path: "{{ log_base }}/sentry"
+    state: absent
+  ignore_errors: true
+  
+- name: Solr Log Dir
+  file:
+    path: "{{ log_base }}/solr"
+    state: absent
+  ignore_errors: true
+  
+- name: Spark Log Dir
+  file:
+    path: "{{ log_base }}/spark"
+    state: absent
+  ignore_errors: true
+  
+- name: Impala Statestore Log Dir
+  file:
+    path: "{{ log_base }}/statestore"
+    state: absent
+  ignore_errors: true
+  
+- name: ZK Log Dir
+  file:
+    path: "{{ log_base }}/zookeeper"
+    state: absent
+  ignore_errors: true

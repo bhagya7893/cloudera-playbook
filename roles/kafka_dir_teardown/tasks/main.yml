@@ -1,0 +1,6 @@
+---
+
+- name: Kafka Dir
+  file:
+    path: "/var/local/kafka/data"
+    state: absent

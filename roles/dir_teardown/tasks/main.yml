@@ -1,0 +1,44 @@
+---
+
+- include_vars: "{{ inventory_dir }}/group_vars/cdh_servers.yml"
+
+#- debug: var=cdh_services
+#- debug: var="{{ cdh_services[0].dfs_data_dir_list }}"
+
+- name: DFS Data Dir Delete
+  shell: rm /data/*/dfs/ -rf
+
+
+- name: SNN Dir Delete
+  file:
+    path: "{{ cdh_services[0].fs_checkpoint_dir_list }}"
+    state: absent
+  ignore_errors: true
+
+- name: NN Dir Delete
+  file:
+    path: "{{ cdh_services[0].dfs_name_dir_list }}"
+    state: absent
+  ignore_errors: true
+
+- name: JN Edits Dir
+  file:
+    path: "{{ cdh_services[0].dfs_journalnode_edits_dir }}"
+    state: absent
+  ignore_errors: true
+
+- name: ZK Data Dirs
+  file:
+    path: "/data/3/zookeeper"
+    state: absent
+
+
+- name: ZK Edits Dirs
+  file:
+    path: "/data/4/zookeeper"
+    state: absent
+
+- name: Kafka Dir
+  file:
+    path: "/var/local/kafka/data"
+    state: absent

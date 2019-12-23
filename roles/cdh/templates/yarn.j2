@@ -4,7 +4,7 @@
   "serviceConfigs": [
     {
       "name": "cm_yarn_container_usage_job_user",
-      "value": "cmjobuser"
+      "variable": "CMJOBUSER"
     }, {
       "name": "zookeeper_service",
       "ref": "ZOOKEEPER-1"
@@ -12,30 +12,67 @@
       "name": "hdfs_service",
       "ref": "HDFS-1"
     }, {
+      "name" : "yarn_admin_acl",
+      "variable" : "YARN_ADMIN_ACL"
+    {% if (krb5_kdc_type == 'ad') or (krb5_kdc_type == 'mit') %}
+    }, {
       "name": "hadoop_secure_web_ui",
       "value": "true"
+    {% endif %}
     }, {
       "name": "cm_yarn_enable_container_usage_aggregation",
       "value": "true"
+    }, {
+      "name" : "cm_yarn_container_usage_job_pool",
+      "value" : "root.default"
     }
+    {% if (cdh_tls) %}
+      , {
+      "name" : "yarn_service_mapred_safety_valve",
+      "value" : "<property><name>mapreduce.job.encrypted-intermediate-data</name><value>true</value><final>true</final><description>Enable encryption for intermediate MapreduceSpills</description></property><property><name>mapreduce.job.encrypted-intermediate-data-key-size-bits</name><value>128</value><final>true</final><description>The key length used to encrypt data spilled to disk</description></property><property><name>mapreduce.job.encrypted-intermediate-data.buffer.kb</name><value>128</value><final>true</final><description>The buffer size in Kb for the stream written to disk after encryption</description></property><property><name>mapreduce.shuffle.ssl.enabled</name><value>true</value><final>true</final><description>Enable YARN encrypted shuffle</description></property>"
+    }, {
+      "name" : "ssl_server_keystore_password",
+      "value" : "{{ tls.keystore_password }}"
+    }, {
+      "name" : "ssl_client_truststore_password",
+      "value" : "{{ tls.truststore_password }}"
+    }, {
+      "name" : "ssl_server_keystore_location",
+      "value" : "{{ tls.keystore_path }}"
+    }, {
+      "name" : "ssl_server_keystore_keypassword",
+      "value" : "{{ tls.keystore_password }}"
+    }
+    {% endif %}
   ],
   "roleConfigGroups": [
     {
       "refName": "YARN-1-JOBHISTORY-BASE",
       "roleType": "JOBHISTORY",
-      "configs": [],
+      "configs": [ {
+        "name" : "oom_heap_dump_enabled",
+        "value" : "false"
+      }, {
+        "name" : "mr2_jobhistory_log_dir",
+        "value" : "{{ log_base }}/hadoop-mapreduce"
+      } ],
       "base": true
     }, {
       "refName": "YARN-1-GATEWAY-BASE",
       "roleType": "GATEWAY",
-      "configs": [
-        {
-          "name": "mapred_submit_replication",
-          "value": "1"
-        }, {
-          "name": "mapred_reduce_tasks",
-          "value": "6"
-        }
+      "configs": [ {
+        "name" : "mapreduce_client_config_safety_valve",
+        "value" : ""
+      }, {
+        "name" : "hadoop_job_history_dir",
+        "value" : "{{ log_base }}/hadoop-mapreduce/history"
+      }, {
+        "name" : "mapred_reduce_tasks",
+        "value" : "368"
+      }, {
+        "name" : "mapred_submit_replication",
+        "value" : "3"
+      } 
       ],
       "base": true
     }, {
@@ -48,13 +85,52 @@
         }, {
           "name": "yarn_nodemanager_log_dirs",
           "variable": "YARN_NODEMANAGER_LOG_DIRS"
-        }
+        }, {
+          "name" : "node_manager_log_dir",
+          "value" : "{{ log_base }}/hadoop-yarn"
+        }, {
+        "name" : "yarn_nodemanager_resource_memory_mb",
+        "value" : "40960"
+      }, {
+        "name" : "yarn_nodemanager_heartbeat_interval_ms",
+        "value" : "240"
+      }, {
+        "name" : "yarn_nodemanager_resource_cpu_vcores",
+        "value" : "24"
+      }, {
+        "name" : "oom_heap_dump_enabled",
+        "value" : "false"
+      } 
       ],
       "base": true
     }, {
       "refName": "YARN-1-RESOURCEMANAGER-BASE",
       "roleType": "RESOURCEMANAGER",
-      "configs": [],
+      "configs": [ {
+        "name" : "resource_manager_log_dir",
+        "value" : "{{ log_base }}/hadoop-yarn"
+      }, {
+        "name" : "yarn_scheduler_maximum_allocation_vcores",
+        "value" : "24"
+      }, {
+        "name" : "resourcemanager_fair_scheduler_preemption",
+        "value" : "true"
+      }, {
+        "name" : "yarn_scheduler_maximum_allocation_mb",
+        "value" : "32768"
+      }, {
+        "name" : "oom_heap_dump_enabled",
+        "value" : "false"
+      }, {
+        "name" : "yarn_scheduler_fair_continuous_scheduling_enabled",
+        "value" : "true"
+      }, {
+        "name" : "resourcemanager_fair_scheduler_assign_multiple",
+        "value" : "false"
+      }, {
+        "name" : "resource_manager_java_heapsize",
+        "value" : "4294967296"
+      } ],
       "base": true
     }
   ]

@@ -1,0 +1,32 @@
+#!/bin/bash
+
+KEYTAB=$(ls -1dt /var/run/cloudera-scm-agent/process/*-hdfs-NAMENODE | head -1)/hdfs.keytab
+PRINC_NAME=$(klist -kt ${KEYTAB} | grep hdfs | awk '{print $4;}' | tail -1)
+
+kinit -kt ${KEYTAB} ${PRINC_NAME}
+
+{% for enc in encryption_keys %}
+hadoop key create {{ enc.key.keyname }} -size 256
+{% endfor %}
+
+{% for enc in encryption_zones %}
+if [[ ! $(hdfs crypto -listZones | grep {{ enc.zone.path }}) ]]
+then
+  #hdfs dfs -rm -r {{ enc.zone.path }} 
+  hdfs dfs -mv {{ enc.zone.path }} {{ enc.zone.path }}-tmp
+  hdfs dfs -mkdir {{ enc.zone.path }}
+
+  hdfs dfs -chown {{ enc.zone.user }}:{{ enc.zone.group }} {{ enc.zone.path }}
+  hdfs dfs -chmod {{ enc.zone.mode }} {{ enc.zone.path }}
+
+  hdfs crypto -createZone -keyName {{ enc.zone.key }} -path {{ enc.zone.path }}
+
+  hdfs dfs -cp -p {{ enc.zone.path }}-tmp/* {{ enc.zone.path }}
+  hdfs dfs -rm -r {{ enc.zone.path }}-tmp
+else
+  echo {{ enc.zone.path}} exists... skipping.
+fi
+
+{% endfor %}
+
+kdestroy

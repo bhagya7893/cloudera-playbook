@@ -12,25 +12,92 @@
       "name": "hadoop_security_authentication",
       {% if (krb5_kdc_type == 'ad') or (krb5_kdc_type == 'mit') %}
       "value": "kerberos"
-      {% else %}
-      "value": "simple"
+      }, {
+      "name" : "trusted_realms",
+      "value" : "{{ trusted_realm|upper }},{{ default_realm|upper }}"
+      }, {
+      {% if cdh_tls == 'true' %}
+      "name" : "dfs_data_transfer_protection",
+      "value" : "privacy"
+      }, {
       {% endif %}
-    }, {
-      "name": "dfs_ha_fencing_methods",
-      "value": "shell(true)"
-    }, {
+      "name" : "hadoop_rpc_protection",
+      "value" : "privacy"
+      }, {
+      "name" : "dfs_encrypt_data_transfer",
+      "value" : "true"
+      }, {
       "name": "hadoop_secure_web_ui",
       "value": "true"
+      }
+      {% else %}
+      "value": "simple"
+      }
+      {% endif %}
+    , {
+      "name": "dfs_ha_fencing_methods",
+      "value": "shell(true)"
+     }, {
+      "name" : "hdfs_sentry_sync_path_prefixes",
+      "variable" : "SENTRY_SYNC_PATH_PREFIXES"
+    }, {
+      "name" : "dfs_umaskmode",
+      "value" : "022"
+    }, {
+      "name" : "dfs_permissions_supergroup",
+      "variable" : "HDFS_SUPERGROUP"
+    }, {
+      "name" : "dfs_namenode_acls_enabled",
+      "value" : "true"
+    }, {
+      "name" : "hdfs_sentry_sync_enable",
+      "value" : "true"
+    }, {
+      "name" : "dfs_block_local_path_access_user",
+      "value" : "impala"
+    }, {
+      "name" : "audit_event_log_dir",
+      "value" : "{{ log_base }}/hadoop-hdfs/audit"
+    }, {
+      "name" : "dfs_encrypt_data_transfer_algorithm",
+      "value" : "AES/CTR/NoPadding"
     }, {
       "name": "zookeeper_service",
       "ref": "ZOOKEEPER-1"
     }
+    {% if (cdh_tls) %}
+    , {
+      "name" : "hdfs_hadoop_ssl_enabled",
+      "value" : "true"
+    }, {
+      "name" : "ssl_server_keystore_location",
+      "value" : "{{ tls.keystore_path }}"
+    }, {
+      "name" : "ssl_client_truststore_location",
+      "value" : "{{ tls.truststore_path }}"
+    }, {
+      "name" : "ssl_client_truststore_password",
+      "value" : "{{ tls.truststore_password }}"
+    }, {
+      "name" : "ssl_server_keystore_keypassword",
+      "value" : "{{ tls.keystore_password }}"
+    }, {
+      "name" : "ssl_server_keystore_password",
+      "value" : "{{ tls.keystore_password }}"
+    }
+    {% endif %}
   ],
   "roleConfigGroups": [
     {
       "refName": "HDFS-1-FAILOVERCONTROLLER-BASE",
       "roleType": "FAILOVERCONTROLLER",
-      "configs": [],
+      "configs": [ {
+        "name" : "failover_controller_log_dir",
+        "value" : "{{ log_base }}/hadoop-hdfs"
+      }, {
+        "name" : "oom_heap_dump_enabled",
+        "value" : "false"
+      } ],
       "base": true
     }, {
       "refName": "HDFS-1-DATANODE-BASE",
@@ -40,7 +107,15 @@
           "name": "dfs_data_dir_list",
           "variable": "DFS_DATA_DIR_LIST"
         }
-        {% if (krb5_kdc_type == 'ad') or (krb5_kdc_type == 'mit') %}
+        {% if ((krb5_kdc_type == 'ad') or (krb5_kdc_type == 'mit')) and (cdh_tls == 'true') %}
+         , {
+          "name": "dfs_datanode_port",
+          "value": "10040"
+        }, {
+          "name": "dfs_datanode_http_port",
+          "value": "10060"
+        }
+           {% else %}
          , {
           "name": "dfs_datanode_port",
           "value": "1004"
@@ -48,7 +123,26 @@
           "name": "dfs_datanode_http_port",
           "value": "1006"
         }
-        {% endif %}
+           {% endif %}
+        , {
+          "name" : "oom_heap_dump_enabled",
+          "value" : "false"
+        }, {
+          "name" : "dfs_datanode_max_locked_memory",
+          "value" : "2610954240"
+        }, {
+          "name" : "datanode_log_dir",
+          "value" : "{{ log_base }}/hadoop-hdfs"
+        }, {
+          "name" : "dfs_datanode_data_dir_perm",
+          "value" : "700"
+        }, {
+          "name" : "dfs_datanode_failed_volumes_tolerated",
+          "value" : "3"
+        }, {
+          "name" : "datanode_java_heapsize",
+          "value" : "2147483648"
+        }
       ],
       "base": true
     }, {
@@ -67,16 +161,37 @@
       "configs": [
         {
           "name": "dfs_federation_namenode_nameservice",
-          "value": "nameservice1"
+          "variable": "NAMESERVICE"
         }, {
           "name": "dfs_namenode_quorum_journal_name",
-          "value": "nameservice1"
+          "variable": "NAMESERVICE"
         }, {
           "name": "autofailover_enabled",
           "value": "true"
         }, {
           "name": "dfs_name_dir_list",
           "variable": "DFS_NAME_DIR_LIST"
+        }, {
+          "name" : "dfs_namenode_servicerpc_address",
+          "value" : "8022"
+        }, {
+          "name" : "dfs_namenode_service_handler_count",
+          "value" : "63"
+        }, {
+          "name" : "dfs_namenode_handler_count",
+          "value" : "63"
+        }, {
+          "name" : "namenode_java_heapsize",
+          "value" : "21474836480"
+        }, {
+          "name" : "fs_trash_interval",
+          "value" : "5760"
+        }, {
+          "name" : "namenode_log_dir",
+          "value" : "{{ log_base }}/hadoop-hdfs"
+        }, {
+          "name" : "dfs_safemode_min_datanodes",
+          "value" : "0"
         }
       ],
       "base": true
@@ -87,13 +202,41 @@
         {
           "name": "dfs_journalnode_edits_dir",
           "variable": "DFS_JOURNALNODE_EDITS_DIR"
+        }, {
+          "name" : "journalnode_log_dir",
+          "value" : "{{ log_base }}/hadoop-hdfs"
+        }, {
+          "name" : "journalNode_java_heapsize",
+          "value" : "268435456"
         }
       ],
       "base": true
     }, {
       "refName": "HDFS-1-HTTPFS-BASE",
       "roleType": "HTTPFS",
-      "configs": [],
+      "configs": [{
+          "name" : "httpfs_log_dir",
+          "value" : "{{ log_base }}/hadoop-httpfs" 
+        }
+        {% if (cdh_tls) %}
+        , {
+          "name" : "httpfs_use_ssl",
+          "value" : "true"
+        }, {
+          "name" : "httpfs_https_keystore_file",
+          "value" : "{{ tls.keystore_path }}"
+        }, {
+          "name" : "httpfs_https_truststore_file",
+          "value" : "{{ tls.truststore_path }}"
+        }, {
+          "name" : "httpfs_https_keystore_password",
+          "value" : "{{ tls.keystore_password }}"
+        }, {
+          "name" : "httpfs_https_truststore_password",
+          "value" : "{{ tls.truststore_password }}"
+       }
+       {% endif %}
+      ],
       "base": true
     }, {
       "refName": "HDFS-1-NFSGATEWAY-BASE",
@@ -103,7 +246,10 @@
     }, {
       "refName": "HDFS-1-BALANCER-BASE",
       "roleType": "BALANCER",
-      "configs": [],
+      "configs": [{
+        "name" : "balancer_log_dir",
+        "value" : "{{ log_base }}/hadoop-hdfs"
+      } ],
       "base": true
     }, {
       "refName": "HDFS-1-GATEWAY-BASE",
@@ -115,12 +261,6 @@
         }
       ],
       "base": true
-    }
-  ],
-  "roles": [
-    {
-      "refName": "HDFS-HTTPFS-1",
-      "roleType": "HTTPFS"
     }
   ]
 }

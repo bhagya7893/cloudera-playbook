@@ -1,0 +1,143 @@
+---
+
+- include_vars: "{{ inventory_dir }}/group_vars/cdh_servers.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/encryption_zones.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/scm_server_enc.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/scm_server.yml"
+
+- set_fact: cm_api_url={{ "https://{{ hostvars[scm_hostname]['inventory_hostname'] }}:{{ scm_port_tls }}" if scm_web_tls==True else "http://{{ hostvars[scm_hostname]['inventory_hostname'] }}:{{ scm_port }}" }}
+
+- name: Get Cloudera Manager API version
+  uri:
+    url: "{{ cm_api_url }}/api/version"
+    method: GET
+    status_code: 200
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    force_basic_auth: yes
+    return_content: yes
+  register: result
+
+- set_fact: cm_api_url="{{ cm_api_url }}/api/{{ result.content }}"
+
+- set_fact: acl_xml="<property><name>hadoop.kms.acl.CREATE</name><value>hdfs hdfs</value></property><property><name>hadoop.kms.acl.GET_KEYS</name><value>hdfs hdfs</value></property><property><name>whitelist.key.acl.MANAGEMENT</name><value>hdfs hdfs</value></property>"
+
+- name: Prepare default ACLs
+  local_action:
+    module: template
+    src: "kms-default.j2"
+    dest: "{{ tmp_dir }}/kms_default_configs.json"
+    mode: 0777
+
+- name: Set KMS ACLs
+  uri:
+    url: "{{ cm_api_url }}/clusters/{{ cluster_display_name }}/services/keytrustee/roleConfigGroups/keytrustee-KMS_KEYTRUSTEE-BASE/config"
+    method: PUT
+    body_format: json
+    body: "{{ lookup('file', ''+ tmp_dir + '/kms_default_configs.json') }}"
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  run_once: true
+
+- name: Refresh KMS
+  uri:
+    url: "{{ cm_api_url }}/clusters/{{ cluster_display_name }}/services/keytrustee/commands/restart"
+    method: POST
+    status_code: 200
+    body_format: json
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: refresh_resp
+  run_once: true
+  delegate_to: "{{ hostvars[groups['master_servers'][0]]['inventory_hostname'] }}"
+
+- debug: var=refresh_resp
+
+- set_fact: command_id="{{ refresh_resp.json.id }}"
+
+- name: Wait for refresh
+  uri:
+    url: "{{ cm_api_url }}/commands/{{ command_id }}"
+    body_format: json
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: refresh_cmd_result
+  until: refresh_cmd_result.json.active == false
+  retries: 5
+  delay: 30
+  run_once: true
+
+- name: Prepare encryption script
+  template:
+    src: "createZones.j2"
+    dest: "{{ tmp_dir }}/createZones.sh"
+    mode: 0777
+
+- name: Run encryption script
+  command: "{{ tmp_dir }}/createZones.sh"  
+  run_once: true
+  register: encryption_script_out
+  delegate_to: "{{ hostvars[groups['master_servers'][0]]['inventory_hostname'] }}"
+
+- debug: var=encryption_script_out
+
+- name: Create KMS ACLs
+  local_action:
+    module: template
+    src: "kmsACLs.j2"
+    dest: "{{ tmp_dir }}/kmsACLs.json"
+    mode: 0777
+
+- name: Set KMS ACLs
+  uri:
+    url: "{{ cm_api_url }}/clusters/{{ cluster_display_name }}/services/keytrustee/roleConfigGroups/keytrustee-KMS_KEYTRUSTEE-BASE/config"
+    method: PUT
+    body_format: json
+    body: "{{ lookup('file', ''+ tmp_dir + '/kmsACLs.json') }}"
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+    run_once: true
+
+- name: Restart Cluster
+  uri:
+    url: "{{ cm_api_url }}/clusters/{{ cluster_display_name }}/commands/restart"
+    method: POST
+    status_code: 200
+    body_format: json
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: restart_resp
+  run_once: true
+  delegate_to: "{{ hostvars[groups['master_servers'][0]]['inventory_hostname'] }}"
+
+
+- set_fact: command_id="{{ restart_resp.json.id }}"
+
+- name: Wait for refresh
+  uri:
+    url: "{{ cm_api_url }}/commands/{{ command_id }}"
+    body_format: json
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: restart_cmd_result
+  until: restart_cmd_result.json.active == false
+  retries: 25
+  delay: 30
+  run_once: true
+

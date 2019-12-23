@@ -1,0 +1,61 @@
+---
+- include_vars: "{{ inventory_dir }}/group_vars/pki.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/ca.yml"
+
+- name: Check if the signed certificate exists
+  file:
+    path: "{{ security_root }}/x509/{{ inventory_hostname_short }}.pem"
+    state: file
+    mode: 0644
+  register: filestatus
+  ignore_errors: yes
+
+- name: Prepare local directory for CSRs
+  local_action:
+    module: file
+    state: directory
+    mode: 0777
+    owner: "{{ ansible_user_id }}"
+    path: "{{ csr_certificates_local_location }}"
+  when: filestatus.failed
+
+- name: Copy signed signed_certificate
+  copy:
+    src: "{{ signed_certificates_local_location }}/{{ inventory_hostname_short }}.pem"
+    dest: "{{ security_root }}/x509/"
+    mode: 0644
+    owner: root
+  when: filestatus.failed
+
+- name: Check if the signed certificate exists
+  file:
+    path: "{{ security_root }}/x509/{{ inventory_hostname_short }}.pem"
+    state: file
+  register: filestatus
+
+- name: Check Certificate Validates
+  shell: "openssl verify -verbose -CAfile {{ security_root }}/CAcerts/{{ chain_cert_name }} {{ security_root }}/x509/{{ inventory_hostname_short }}.pem"
+
+- name: Check New Certificate Matches
+  shell: "[[ $(keytool -list -keystore {{ security_root }}/jks/{{ inventory_hostname_short }}.jks -storepass {{ keystore_password }} -storetype jks -alias {{ inventory_hostname_short }} -rfc | openssl x509 -inform pem -modulus -noout | openssl md5) == $(openssl x509 -noout -modulus -in {{ security_root }}/x509/{{ inventory_hostname_short }}.pem | openssl md5) ]]"
+  register: installed_cert
+
+- name: Check certificate not already present
+  shell: "keytool -list -keystore {{ security_root }}/jks/{{ inventory_hostname_short }}.jks -storepass {{ keystore_password }} -storetype jks -alias {{ inventory_hostname_short }} -v | grep 'Certificate chain length: 1'"
+  register: installed_cert_present
+  ignore_errors: yes
+    
+- name: Install certificate reply
+  shell: "keytool -importcert -alias {{ inventory_hostname_short }} -keystore {{ security_root }}/jks/{{ inventory_hostname_short }}.jks -file {{ security_root }}/x509/{{ inventory_hostname_short }}.pem -storepass {{ keystore_password }} -noprompt -trustcacerts"
+  when: installed_cert_present.rc == 0
+
+- name: Create host agnostic links
+  file:
+    src: '{{ security_root }}/{{ item.src }}'
+    dest: '{{ security_root }}/{{ item.dest }}'
+    state: hard
+  with_items:
+    - { src: "jks/{{ inventory_hostname_short }}.jks", dest: "jks/localhost.jks" }
+    - { src: "x509/{{ inventory_hostname_short }}.key", dest: "x509/localhost.key" }
+    - { src: "x509/{{ inventory_hostname_short }}.pem", dest: "x509/localhost.pem" }
+

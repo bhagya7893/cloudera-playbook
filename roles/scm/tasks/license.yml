@@ -1,10 +1,19 @@
 ---
 
+- include_vars: "{{ inventory_dir }}/group_vars/scm_server_enc.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/scm_server.yml"
+
+- name: Copy cm_api to Python lib directory
+  copy:
+    src: cloudera_license.txt
+    dest: "{{ hostvars[scm_hostname]['license_file'] }}"
+    owner: cloudera-scm
+    group: cloudera-scm
+    mode: '0644'
+
 - name: Check license file exists
   stat: path={{ hostvars[scm_hostname]['license_file'] }}
   register: file
-
-- debug: msg="License file '{{ hostvars[scm_hostname]['license_file'] }}' exists = {{ file.stat.exists }}"
 
 # https://cloudera.github.io/cm_api/apidocs/v12/path__cm_license.html
 - name: Upload license file to Cloudera Manager
@@ -21,8 +30,6 @@
   notify:
     - restart cloudera-scm-server
   when: file.stat.exists == True
-
-- debug: var=resp
 
 # URI module does not have the equivalent to cURL's -F/--form
 #  uri:

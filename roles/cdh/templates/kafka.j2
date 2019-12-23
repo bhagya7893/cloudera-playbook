@@ -1,0 +1,46 @@
+{
+    "refName" : "KAFKA-1",
+    "serviceType" : "KAFKA",
+    "serviceConfigs" : [ {
+      "name" : "default.replication.factor",
+      "value" : "1"
+    }, {
+      "name" : "zookeeper.chroot",
+      "value" : "/kafka"
+    }, {
+      "name" : "sentry.kafka.caching.ttl.ms",
+      "value" : "1"
+    }, {
+      "name" : "sentry_service",
+      "value" : "SENTRY-1"
+    }, {
+      "name": "kerberos.auth.enable",
+      {% if (krb5_kdc_type == 'ad') or (krb5_kdc_type == 'mit') %}
+      "value": "true"
+      {% else %}
+      "value": "false"
+      {% endif %}
+    }, {
+      "name" : "zookeeper_service",
+      "ref" : "ZOOKEEPER-1"
+    } ],
+    "roleConfigGroups" : [ {
+      "refName" : "KAFKA-1-GATEWAY-BASE",
+      "roleType" : "GATEWAY",
+      "base" : true
+    }, {
+      "refName" : "KAFKA-1-KAFKA_BROKER-BASE",
+      "roleType" : "KAFKA_BROKER",
+      "configs" : [ {
+        "name" : "log.retention.ms",
+        "value" : "600000"
+      }, {
+        "name" : "kafka.properties_role_safety_valve",
+        "value" : "offsets.retention.minutes=40320\nsasl.kerberos.principal.to.local.rules=RULE:[1:$1@$0](.*@{{ trusted_realm|upper }})s/@{{ trusted_realm|upper }}// , RULE:[2:$1@$0](.*@{{ trusted_realm|upper }})s/@{{ trusted_realm|upper }}//,DEFAULT"
+      }, {
+        "name" : "super.users",
+        "value" : "kafka"
+      } ],
+      "base" : true
+    } ]
+  }

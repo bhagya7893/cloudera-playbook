@@ -1,0 +1,37 @@
+- include_vars: "{{ inventory_dir }}/group_vars/scm_server.yml"
+
+- name: Permission data dirs on Worker Nodes
+  file:
+    path: "{{ item }}"
+    owner: root
+    group: root
+    mode: '0755'
+  when: scm_version[0] == "5"
+  with_items:
+    - /data
+    - /data/1
+    - /data/2
+    - /data/3
+    - /data/4
+    - /data/5
+    - /data/6
+    - /data/7
+    - /data/8
+
+- name: Create DFS dirs
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  when: scm_version[0] == "5"
+  with_items:
+    - /data/1/dfs
+    - /data/2/dfs
+    - /data/3/dfs
+    - /data/4/dfs
+    - /data/5/dfs
+    - /data/6/dfs
+    - /data/7/dfs
+    - /data/8/dfs

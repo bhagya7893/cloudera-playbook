@@ -1,10 +1,20 @@
 ---
 
+- include_vars: "{{ inventory_dir }}/group_vars/db_server.yml"
+
 - name: Install MariaDB packages
   yum: name={{ item }} state=installed
   with_items:
     - mariadb-server
     - MySQL-python
+
+- name: Create Mysql Dir
+  file:
+    path: "{{ mysql_datadir }}"
+    state: directory
+    owner: mysql
+    group: mysql
+    mode: '0755'
 
 - name: Create MariaDB configuration file
   template: src=my.cnf.j2 dest=/etc/my.cnf

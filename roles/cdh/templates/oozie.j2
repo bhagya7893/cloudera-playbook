@@ -11,6 +11,11 @@
     }, {
       "name": "mapreduce_yarn_service",
       "ref": "YARN-1"
+    {% if (cdh_tls) %}
+    }, {
+      "name" : "oozie_use_ssl",
+      "value" : "true"
+    {% endif %}
     }, {
       "name": "spark_on_yarn_service",
       "ref": "SPARK_ON_YARN-1"
@@ -26,7 +31,7 @@
       "configs": [
         {
           "name": "oozie_database_host",
-          "value": "{{ hostvars[db_hostname]['inventory_hostname'] }}"
+          "value": "{{ databases.oozie.host }}:{{ databases.oozie.port }}"
         }, {
           "name": "oozie_database_type",
           "value": "{{ databases.oozie.type }}"
@@ -43,8 +48,33 @@
           "name": "oozie_workflow_extension_schemas",
           "value": ",ssh-action-0.1.xsd,hive-action-0.3.xsd,sqoop-action-0.3.xsd,shell-action-0.2.xsd,shell-action-0.1.xsd"
         }, {
+          "name" : "oozie_log_dir",
+          "value" : "{{ log_base }}/oozie"
+        }, {
+          "name" : "oozie_email_from_address",
+          "variable" : "OOZIE_FROM_EMAIL_ADDRESS"
+        }, {
+          "name" : "oozie_email_smtp_host",
+          "variable" : "OOZIE_EMAIL_SMTP_HOST"
+        }, {
+          "name" : "oozie_https_port",
+          "variable" : "OOZIE_HTTPS_PORT"
+        {% if (cdh_tls) %}
+        }, {
+          "name" : "oozie_https_keystore_file",
+          "value" : "{{ tls.keystore_path }}"
+        }, {
+          "name" : "oozie_https_truststore_file",
+          "value" : "{{ tls.truststore_path }}"
+        }, {
+          "name" : "oozie_https_keystore_password",
+          "value" : "{{ tls.keystore_password }}"
+        {% endif %}
+        {% if (krb5_kdc_type == 'ad') or (krb5_kdc_type == 'mit') %}
+        }, {
           "name": "oozie_config_safety_valve",
-          "value": "\n<property>\n<name>oozie.action.launcher.mapreduce.job.ubertask.enable</name>\n<value>false</value>\n</property>"
+          "value": "\n<property>\n<name>oozie.service.AuthorizationService.security.enabled</name>\n<value>true</value>\n</property>"
+        {% endif %}
         }
       ],
       "base": true

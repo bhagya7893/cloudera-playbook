@@ -4,14 +4,40 @@
   "serviceConfigs": [
     {
       "name": "zookeeper_datadir_autocreate",
-      "value": "true"
+      "value": "false"
+    {% if (krb5_kdc_type == 'ad') or (krb5_kdc_type == 'mit') %}
+    }, {
+      "name" : "enableSecurity",
+      "value" : "true"
+    }, {
+      "name" : "quorum_auth_enable_sasl",
+      "value" : "true"
+    {% endif %}
     }
   ],
   "roleConfigGroups": [
     {
       "refName": "ZOOKEEPER-1-SERVER-BASE",
       "roleType": "SERVER",
-      "configs": [],
+      "configs" : [ {
+        "name" : "zk_server_log_dir",
+        "value" : "{{ log_base }}/zookeeper"
+      }, {
+        "name" : "oom_heap_dump_enabled",
+        "value" : "false"
+      }, {
+        "name" : "maxSessionTimeout",
+        "value" : "60000"
+      }, {
+        "name" : "dataDir",
+        "variable" : "ZOOKEEPER_EDITS_DIR"
+      }, {
+        "name" : "dataLogDir",
+        "variable" : "ZOOKEEPER_DATA_LOG_DIR"
+      }, {
+        "name" : "maxClientCnxns",
+        "value" : "1200"
+      } ],
       "base": true
     }
   ]

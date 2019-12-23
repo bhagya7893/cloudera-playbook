@@ -2,27 +2,119 @@
   "items" : [
     {% if krb5_kdc_type != 'none' %}
     {
-      "name" : "KDC_HOST",
-      "value" : "{{ hostvars[groups['krb5_server'][0]]['inventory_hostname'] }}"
-    }, {
       "name" : "KDC_TYPE",
       {% if krb5_kdc_type == 'ad' %}
       "value" : "Active Directory"
+      }, {
+      "name" : "KDC_HOST",
+      "value" : "{{ kdc }}"
       {% else %}
       "value" : "MIT KDC"
+      }, {
+      "name" : "KDC_HOST",
+      "value" : "{{ hostvars[groups['krb5_server'][0]]['inventory_hostname'] }}"
       {% endif %}
     }, {
       "name" : "SECURITY_REALM",
-      "value" : "{{ default_realm|upper }}"
+      "value" : "{{ krb5_realm }}"
     }, {
       "name" : "KRB_MANAGE_KRB5_CONF",
+      "value" : "false"
+    }, {
+      "name" : "AD_ACCOUNT_PREFIX",
+      "value" : "{{ ad_account_prefix }}"
+    }, {
+      "name" : "AD_KDC_DOMAIN",
+      "value" : "{{ computer_ou }}"
+    }, {
+      "name" : "KRB_ENC_TYPES",
+      "value" : "{{ enc_types }}"
+    }, {
+      "name" : "NT_DOMAIN",
+      "value" : "{{ domain }}"
+    }, {
+      "name" : "KDC_ACCOUNT_CREATION_HOST_OVERRIDE",
+      "value" : "{{ kdc_account_creation_host_override }}"
+    }, {
+      "name" : "AD_DELETE_ON_REGENERATE",
+      "value" : "true",
+    },
+    {% endif %}
+    {% if (agent_tls) %}
+    {
+      "name" : "AGENT_TLS",
+      "value" : "true",
+    }, {
+      "name" : "KEYSTORE_PASSWORD",
+      "value" : "{{ tls.keystore_password }}",
+    }, {
+      "name" : "KEYSTORE_PATH",
+      "value" : "{{ tls.keystore_path }}",
+    }, {
+      "name" : "TRUSTSTORE_PASSWORD",
+      "value" : "{{ tls.truststore_password }}",
+    }, {
+      "name" : "TRUSTSTORE_PATH",
+      "value" : "{{ tls.truststore_path }}",
+    }, {
+      "name" : "NEED_AGENT_VALIDATION",
+      "value" : "true"
+    },
+    {% endif %}
+    {% if (scm_web_tls) %}
+    {
+      "name" : "WEB_TLS",
+      "value" : "true"
+    }, {
+      "name" : "HTTPS_PORT",
+      "value" : "{{ scm_port_tls }}"
+    },
+    {% else %}
+    {
+      "name" : "WEB_TLS",
       "value" : "false"
     },
     {% endif %}
     {
-      "name" : "REMOTE_PARCEL_REPO_URLS",
-      "value" : {% set repo_j = joiner(",") %}
-      "{% for repo in scm_repositories %}{{ repo_j() }}{{ repo }}{% endfor %}"
+      "name" : "HTTP_PORT",
+      "value" : "{{ scm_port }}"
+    }, {
+       "name" : "CUSTOM_BANNER_HTML",
+       "value" : "{{ banner_text }}"
+    }, {
+       "name" : "CUSTOM_HEADER_COLOR",
+       "value" : "{{ banner_colour }}"
+    }, {
+      "name" : "ALLOW_USAGE_DATA",
+      "value" : "false"
+    }, {
+       "name" : "USING_HELP_FROM_CCP",
+       "value" : "false",
+    }, {
+       "name" : "PARCEL_DISTRIBUTE_RATE_LIMIT_KBS_PER_SECOND",
+       "value" : "512000",
+    }, {
+       "name" : "PHONE_HOME",
+       "value" : "false",
+    }, {
+       "name" : "LDAP_URL",
+       "value" : "{{ ldap_rdom.url }}",
+    }, {
+       "name" : "LDAP_BIND_DN",
+       "value" : "{{ ldap_rdom.bind_dn }}",
+    }, {
+       "name" : "AUTH_BACKEND_ORDER",
+       "value" : "DB_THEN_LDAP",
+    }, {
+       "name" : "LDAP_BIND_PW",
+       "value" : "{{ ldap_rdom.bind_pass }}",
+    }, {
+       "name" : "LDAP_CLUSTER_ADMIN_GROUPS",
+       "value" : "{{ ldap_rdom.cm_clu_admin }}",
+    }, {
+       "name" : "REMOTE_PARCEL_REPO_URLS",
+       "value" : {% set repo_j = joiner(",") %}
+       "{% for repo in scm_repositories %}{{ repo_j() }}{{ repo }}{% endfor %}"
     }
   ]
 }

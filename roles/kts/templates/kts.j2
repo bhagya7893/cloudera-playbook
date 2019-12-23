@@ -1,0 +1,115 @@
+{
+  "cdhVersion" : "6.0.0",
+  "displayName" : "{{ kts_display_name }}",
+  "cmVersion" : "{{ scm_version }}",
+  "products" : [ {% set prod_j = joiner(",") %}
+    {% for product in kts_products %}
+    {{ prod_j() }}
+    {
+      "version" : "{{ product['version'] }}",
+      "product" : "{{ product['product'] }}"
+    }
+    {% endfor %}
+   ],
+  "services" : [ {
+    "refName" : "keytrustee_server",
+    "serviceType" : "KEYTRUSTEE_SERVER",
+    "serviceConfigs" : [ {
+      "name" : "keytrustee.home",
+      "variable" : "KEYTRUSTEE_SERVER_KEYTRUSTEE_HOME"
+    } ],
+    "roleConfigGroups" : [ {
+      "refName" : "keytrustee_server-KEYTRUSTEE_ACTIVE_SERVER-BASE",
+      "roleType" : "KEYTRUSTEE_ACTIVE_SERVER",
+      "configs" : [ {
+        "name" : "ssl_server_ca_certificate_location",
+        "value" : "{{ tls.cert_chain }}"
+      }, {
+        "name" : "ssl_server_privatekey_location",
+        "value" : "{{ tls.private_key }}"
+      }, {
+        "name" : "ssl_server_privatekey_password",
+        "value" :  "{{ tls.keystore_password }}"
+      }, {
+        "name" : "ssl_server_certificate_location",
+        "value" : "{{ tls.tls_cert }}"
+      } ],
+      "base" : true
+    }, {
+      "refName" : "keytrustee_server-KEYTRUSTEE_PASSIVE_SERVER-BASE",
+      "roleType" : "KEYTRUSTEE_PASSIVE_SERVER",
+      "configs" : [ {
+        "name" : "ssl_server_ca_certificate_location",
+        "value" : "{{ tls.cert_chain }}"
+      }, {
+        "name" : "ssl_server_privatekey_password",
+        "value" : "{{ tls.keystore_password }}"
+      }, {
+        "name" : "ssl_server_privatekey_location",
+        "value" : "{{ tls.private_key }}"
+      }, {
+        "name" : "ssl_server_certificate_location",
+        "value" : "{{ tls.tls_cert }}"
+      } ],
+      "base" : true
+    }, {
+      "refName" : "keytrustee_server-DB_ACTIVE-BASE",
+      "roleType" : "DB_ACTIVE",
+      "configs" : [ {
+        "name" : "db_root",
+        "variable" : "KEYTRUSTEE_SERVER_DB_ACTIVE_BASE_DB_ROOT"
+      } ],
+      "base" : true
+    }, {
+      "refName" : "keytrustee_server-DB_PASSIVE-BASE",
+      "roleType" : "DB_PASSIVE",
+      "configs" : [ {
+        "name" : "db_root",
+        "variable" : "KEYTRUSTEE_SERVER_DB_PASSIVE_BASE_DB_ROOT"
+      } ],
+      "base" : true
+    } ]
+  } ],
+  "hostTemplates" : [ {
+    "refName" : "KeyTrusteeActive",
+    "cardinality" : 0,
+    "roleConfigGroupsRefNames" : [ "keytrustee_server-DB_ACTIVE-BASE", "keytrustee_server-KEYTRUSTEE_ACTIVE_SERVER-BASE" ]
+  }, {
+    "refName" : "KeyTrusteePassive",
+    "cardinality" : 0,
+    "roleConfigGroupsRefNames" : [ "keytrustee_server-DB_PASSIVE-BASE", "keytrustee_server-KEYTRUSTEE_PASSIVE_SERVER-BASE" ]
+  } ],
+  "instantiator" : {
+  "clusterName" : "{{ kts_display_name }}",
+  "hosts" : [
+    {% set host_joiner = joiner(",") %}
+    {% for host in groups['kts_servers'] %}
+    {% if 'host_template' in hostvars[host] %}
+    {{ host_joiner() }}
+    {
+      "hostName" : "{{ host }}",
+      "hostTemplateRefName" : "{{ hostvars[host]['host_template'] }}"
+      {% if 'role_ref_names' in hostvars[host] %}
+      ,"roleRefNames" : [ "{{ hostvars[host]['role_ref_names'] }}" ]
+      {% endif %}
+    }
+    {% endif %}
+    {% endfor %}
+  ],
+  "variables" : [
+  {% set var_joiner = joiner(",") %}
+  {% for item in kts_services %}
+    {% for (k,v) in item.iteritems() %}
+      {% if not k|lower == 'type' %}
+      {{ var_joiner() }}
+      {
+        "name": "{{ k|upper }}",
+        "value": "{{ v }}"
+      }
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+  ]
+}
+}
+

@@ -1,0 +1,186 @@
+---
+
+- include_vars: "{{ inventory_dir }}/group_vars/cdh_servers.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/scm_server.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/scm_server_enc.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/krb5_server.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/ldap_enc.yml"
+
+- set_fact: cm_api_url={{ "https://{{ hostvars[scm_hostname]['inventory_hostname'] }}:{{ scm_port_tls }}" if scm_web_tls==True else "http://{{ hostvars[scm_hostname]['inventory_hostname'] }}:{{ scm_port }}" }}
+
+- name: Get Cloudera Manager API version
+  uri:
+    url: "{{ cm_api_url }}/api/version"
+    method: GET
+    status_code: 200
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    force_basic_auth: yes
+    return_content: yes
+  register: result
+
+- set_fact: cm_api_url="{{ cm_api_url }}/api/{{ result.content }}"
+
+- name: Prepare Cloudera Manager settings - Cluster Admin
+  template:
+    src: "externalUserMappingsClu.j2"
+    dest: "{{ tmp_dir }}/externalUserMappingsClu.json"
+    mode: 0777
+  delegate_to: localhost
+
+  
+- name: Prepare Cloudera Manager settings - Full Admin
+  template:
+    src: "externalUserMappingsFull.j2"
+    dest: "{{ tmp_dir }}/externalUserMappingsFull.json"
+    mode: 0777
+  delegate_to: localhost
+
+
+- name: Prepare Cloudera Manager settings - Key Admin
+  template:
+    src: "externalUserMappingsKey.j2"
+    dest: "{{ tmp_dir }}/externalUserMappingsKey.json"
+    mode: 0777
+  delegate_to: localhost  
+
+
+- name: Prepare Cloudera Manager settings - Operator
+  template:
+    src: "externalUserMappingsOp.j2"
+    dest: "{{ tmp_dir }}/externalUserMappingsOp.json"
+    mode: 0777
+  delegate_to: localhost
+  
+ 
+- name: Prepare Cloudera Manager settings - Read Only
+  template:
+    src: "externalUserMappingsRO.j2"
+    dest: "{{ tmp_dir }}/externalUserMappingsRO.json"
+    mode: 0777
+  delegate_to: localhost
+  
+  
+- name: Prepare Cloudera Manager settings - User Admin
+  template:
+    src: "externalUserMappingsUser.j2"
+    dest: "{{ tmp_dir }}/externalUserMappingsUser.json"
+    mode: 0777
+  delegate_to: localhost
+  
+  
+- name: Update Cloudera Manager settings - Cluster Admin
+  uri:
+    url: "{{ cm_api_url }}/externalUserMappings"
+    method: POST
+    body_format: json
+    body: "{{ lookup('file', ''+ tmp_dir + '/externalUserMappingsClu.json') }}"
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: scm_resp_map
+  delegate_to: localhost
+
+  
+- name: Update Cloudera Manager settings - Full Admin
+  uri:
+    url: "{{ cm_api_url }}/externalUserMappings"
+    method: POST
+    body_format: json
+    body: "{{ lookup('file', ''+ tmp_dir + '/externalUserMappingsFull.json') }}"
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: scm_resp_map
+  delegate_to: localhost
+  
+- name: Update Cloudera Manager settings - Key Admin
+  uri:
+    url: "{{ cm_api_url }}/externalUserMappings"
+    method: POST
+    body_format: json
+    body: "{{ lookup('file', ''+ tmp_dir + '/externalUserMappingsKey.json') }}"
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: scm_resp_map
+  delegate_to: localhost
+  
+- name: Update Cloudera Manager settings - Operator
+  uri:
+    url: "{{ cm_api_url }}/externalUserMappings"
+    method: POST
+    body_format: json
+    body: "{{ lookup('file', ''+ tmp_dir + '/externalUserMappingsOp.json') }}"
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: scm_resp_map
+  delegate_to: localhost
+  
+- name: Update Cloudera Manager settings - Read Only
+  uri:
+    url: "{{ cm_api_url }}/externalUserMappings"
+    method: POST
+    body_format: json
+    body: "{{ lookup('file', ''+ tmp_dir + '/externalUserMappingsRO.json') }}"
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: scm_resp_map
+  delegate_to: localhost
+  
+- name: Update Cloudera Manager settings - User Admin
+  uri:
+    url: "{{ cm_api_url }}/externalUserMappings"
+    method: POST
+    body_format: json
+    body: "{{ lookup('file', ''+ tmp_dir + '/externalUserMappingsUser.json') }}"
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: scm_resp_map
+  delegate_to: localhost
+
+
+- file:
+    path: "{{ tmp_dir }}/externalUserMappingsClu.json"
+    state: absent
+  delegate_to: localhost
+
+- file:
+    path: "{{ tmp_dir }}/externalUserMappingsFull.json"
+    state: absent
+  delegate_to: localhost
+
+- file:
+    path: "{{ tmp_dir }}/externalUserMappingsKey.json"
+    state: absent
+  delegate_to: localhost
+
+- file:
+    path: "{{ tmp_dir }}/externalUserMappingsOp.json"
+    state: absent
+  delegate_to: localhost
+
+- file:
+    path: "{{ tmp_dir }}/externalUserMappingsRO.json"
+    state: absent
+  delegate_to: localhost
+
+- file:
+    path: "{{ tmp_dir }}/externalUserMappingsUser.json"
+    state: absent
+  delegate_to: localhost

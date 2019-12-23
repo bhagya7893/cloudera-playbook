@@ -1,0 +1,30 @@
+---
+
+- include_vars: "{{ inventory_dir }}/group_vars/db_server.yml"
+
+- name: Drop amon database
+  mysql_db: login_user=root login_password={{ mysql_root_password }} name=amon state=absent config_file=/etc/my.cnf login_unix_socket={{ mysql_socket }}
+
+- name: Drop hue database
+  mysql_db: login_user=root login_password={{ mysql_root_password }} name=hue state=absent config_file=/etc/my.cnf login_unix_socket={{ mysql_socket }}
+
+- name: Drop hive metastore database
+  mysql_db: login_user=root login_password={{ mysql_root_password }} name=metastore state=absent config_file=/etc/my.cnf login_unix_socket={{ mysql_socket }}
+
+- name: Drop nav database
+  mysql_db: login_user=root login_password={{ mysql_root_password }} name=nav state=absent config_file=/etc/my.cnf login_unix_socket={{ mysql_socket }}
+
+- name: Drop navms database
+  mysql_db: login_user=root login_password={{ mysql_root_password }} name=navms state=absent config_file=/etc/my.cnf login_unix_socket={{ mysql_socket }}
+
+- name: Drop oozie database
+  mysql_db: login_user=root login_password={{ mysql_root_password }} name=oozie state=absent config_file=/etc/my.cnf login_unix_socket={{ mysql_socket }}
+
+- name: Drop rman database
+  mysql_db: login_user=root login_password={{ mysql_root_password }} name=rman state=absent config_file=/etc/my.cnf login_unix_socket={{ mysql_socket }}
+
+- name: Drop sentry database
+  mysql_db: login_user=root login_password={{ mysql_root_password }} name=sentry state=absent config_file=/etc/my.cnf login_unix_socket={{ mysql_socket }}
+
+
+

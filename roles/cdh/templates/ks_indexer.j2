@@ -1,0 +1,33 @@
+{
+    "refName" : "KS_INDEXER-1",
+    "serviceType" : "KS_INDEXER",
+    "serviceConfigs" : [ {
+      "name" : "hbase_service",
+      "ref" : "HBASE-1"
+    }, {
+      "name" : "solr_service",
+      "ref" : "SOLR-1"
+    {% if (krb5_kdc_type == 'ad') or (krb5_kdc_type == 'mit') %}
+    }, {
+      "name" : "hbase_indexer_security_authentication",
+      "value" : "kerberos"
+    {% endif %}
+    {% if (cdh_tls) %}
+    }, {
+      "name" : "keystore_indexer_truststore_file",
+      "value" : "{{ tls.truststore_path }}"
+    {% endif %}
+    } ],
+    "roleConfigGroups" : [ {
+      "refName" : "KS_INDEXER-1-HBASE_INDEXER-BASE",
+      "roleType" : "HBASE_INDEXER",
+      "configs" : [ {
+        "name" : "hbase_indexer_log_dir",
+        "value" : "{{ log_base }}/hbase-solr"
+      }, {
+        "name" : "oom_heap_dump_enabled",
+        "value" : "false"
+      } ],
+      "base" : true
+    } ]
+  }

@@ -1,0 +1,12 @@
+---
+
+kts_display_name: KeyTrusteeServerCluster
+kts_org_name: OrgName1
+
+kts_services:
+
+  - type: kts
+    keytrustee_server_DB_ACTIVE_BASE_db_root: /var/opt/cloudera/keytrustee/db
+    keytrustee_server_DB_PASSIVE_BASE_db_root: /var/opt/cloudera/keytrustee/db
+    keytrustee_server_keytrustee_home: /var/opt/cloudera/keytrustee/.keytrustee
+

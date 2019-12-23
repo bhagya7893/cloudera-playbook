@@ -1,0 +1,4 @@
+- name: KMS Data Dir
+  file:
+    path: "/var/opt/cloudera/kms-keytrustee"
+    state: absent

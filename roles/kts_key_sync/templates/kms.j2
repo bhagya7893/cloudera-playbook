@@ -1,0 +1,33 @@
+{
+  "items" : [ {
+    "name" : "keytrustee",
+    "displayName" : "Key Trustee KMS",
+    "type" : "KEYTRUSTEE",
+    "config" : {
+      "items" : [ {
+        "name" : "zookeeper_service",
+        "value" : "zookeeper"
+      {% if (krb5_kdc_type == 'ad') or (krb5_kdc_type == 'mit') %}
+      }, {
+        "name" : "hadoop_kms_authentication_type",
+        "value" : "kerberos"
+      {% endif %}
+      } ]
+    },
+    "roles": [
+       {
+        "type" : "KMS_KEYTRUSTEE",
+        "hostRef" : {
+          "hostId" : "{{ scm_host_ids[hostvars[groups['kms_servers'][0]]['inventory_hostname']] }}",
+          "hostname" : "{{ hostvars[groups['kms_servers'][0]]['inventory_hostname'] }}"
+        }
+      }, {
+        "type" : "KMS_KEYTRUSTEE",
+        "hostRef" : {
+          "hostId" : "{{ scm_host_ids[hostvars[groups['kms_servers'][1]]['inventory_hostname']] }}",
+          "hostname" : "{{ hostvars[groups['kms_servers'][1]]['inventory_hostname'] }}"
+        }
+      }
+    ]
+  }
+] }

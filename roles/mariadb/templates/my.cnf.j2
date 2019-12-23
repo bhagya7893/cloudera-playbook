@@ -40,6 +40,10 @@ innodb_thread_concurrency       = 8
 innodb_flush_method             = O_DIRECT
 innodb_log_file_size            = 512M
 
+[mysql]
+socket    = {{ mysql_socket }}
+port      = {{ mysql_port }}
+
 [mysqld_safe]
 log-error = {{ mysql_log }}
 pid-file  = {{ mysql_pid_file }}

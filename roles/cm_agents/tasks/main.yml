@@ -1,15 +1,28 @@
 ---
 
+- include_vars: "{{ inventory_dir }}/group_vars/scm_server.yml"
+
 - include: 36322.yml
 
 - name: Install Cloudera Manager Agents
   yum: name={{ item }} state=installed
   with_items:
-    - cloudera-manager-daemons
-    - cloudera-manager-agent
+    - "cloudera-manager-daemons-{{ scm_version }}"
+    - "cloudera-manager-agent-{{ scm_version }}"
 
-- name: Configure Cloudera Manager Agent 'server_host'
-  lineinfile: dest=/etc/cloudera-scm-agent/config.ini regexp=^server_host line=server_host={{ hostvars[scm_hostname]['inventory_hostname'] }}
+- name: Deploy CM Agent config ini
+  template:
+    src: config.ini.j2
+    dest: /etc/cloudera-scm-agent/config.ini
+    group: root
+    owner: root
+    mode: '0644'
+
+#- name: Configure Cloudera Manager Agent 'server_host'
+#  lineinfile: dest=/etc/cloudera-scm-agent/config.ini regexp=^server_host line=server_host={{ hostvars[scm_hostname]['inventory_hostname'] }}
+
+#- name: Configure Clouder Manager Agent use_tls
+#  lineinfile: dest=/etc/cloudera-scm-agent/config.ini regexp=^use_tls line=use_tls={{ use_tls  }}
 
 - name: Restart Cloudera Manager Agents
   service: name=cloudera-scm-agent state=restarted enabled=yes

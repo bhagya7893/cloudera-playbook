@@ -1,5 +1,5 @@
 [ {
-  "refName": "HostTemplate-Gateway",
+  "refName": "HostTemplate-GatewayLB",
   "cardinality": 1,
   "roleConfigGroupsRefNames": [
     "HDFS-1-GATEWAY-BASE",
@@ -10,7 +10,30 @@
     "HUE-1-KT_RENEWER-BASE",
     {% endif %}
     "OOZIE-1-OOZIE_SERVER-BASE",
+    "HIVE-1-HIVESERVER2-BASE",
     "SPARK_ON_YARN-1-GATEWAY-BASE",
+    "HBASE-1-HBASERESTSERVER-BASE",
+    "HBASE-1-HBASETHRIFTSERVER-BASE",
+    "HUE-1-HUE_LOAD_BALANCER-BASE",
+    "SENTRY-1-GATEWAY-BASE",
+    "SOLR-1-GATEWAY-BASE",
+    "YARN-1-GATEWAY-BASE" ]
+}, {
+ "refName": "HostTemplate-GatewayEdge",
+  "cardinality": 1,
+  "roleConfigGroupsRefNames": [
+    "HDFS-1-GATEWAY-BASE",
+    "HDFS-1-HTTPFS-BASE",
+    "HIVE-1-GATEWAY-BASE",
+    "HUE-1-HUE_SERVER-BASE",
+    {% if (krb5_kdc_type == 'ad') or (krb5_kdc_type == 'mit') %}
+    "HUE-1-KT_RENEWER-BASE",
+    {% endif %}
+    "SPARK_ON_YARN-1-GATEWAY-BASE",
+    "HBASE-1-HBASERESTSERVER-BASE",
+    "HBASE-1-HBASETHRIFTSERVER-BASE",
+    "SENTRY-1-GATEWAY-BASE",
+    "SOLR-1-GATEWAY-BASE",
     "YARN-1-GATEWAY-BASE" ]
 }, {
   "refName": "HostTemplate-Master1",
@@ -19,11 +42,11 @@
     "HDFS-1-NAMENODE-BASE",
     "HDFS-1-FAILOVERCONTROLLER-BASE",
     "HDFS-1-JOURNALNODE-BASE",
-    "HDFS-1-BALANCER-BASE",
-    "SENTRY-1-GATEWAY-BASE",
     "SENTRY-1-SENTRY_SERVER-BASE",
     "ZOOKEEPER-1-SERVER-BASE",
-    "HIVE-1-GATEWAY-BASE" ]
+    "YARN-1-RESOURCEMANAGER-BASE",
+    "HBASE-1-MASTER-BASE",
+    "HIVE-1-HIVEMETASTORE-BASE" ]
 }, {
   "refName": "HostTemplate-Master2",
   "cardinality": 1,
@@ -31,28 +54,54 @@
     "HDFS-1-NAMENODE-BASE",
     "HDFS-1-FAILOVERCONTROLLER-BASE",
     "HDFS-1-JOURNALNODE-BASE",
+    "SENTRY-1-SENTRY_SERVER-BASE",
     "ZOOKEEPER-1-SERVER-BASE",
-    "HIVE-1-HIVESERVER2-BASE",
-    "HIVE-1-HIVEMETASTORE-BASE",
-    "HIVE-1-GATEWAY-BASE",
-    "SPARK_ON_YARN-1-GATEWAY-BASE" ]
+    "YARN-1-RESOURCEMANAGER-BASE",
+    "HBASE-1-MASTER-BASE",
+    "HIVE-1-HIVEMETASTORE-BASE" ]
 }, {
   "refName": "HostTemplate-Master3",
   "cardinality": 1,
   "roleConfigGroupsRefNames": [
     "HDFS-1-JOURNALNODE-BASE",
+    "HDFS-1-BALANCER-BASE",
     "ZOOKEEPER-1-SERVER-BASE",
-    "HIVE-1-GATEWAY-BASE",
     "IMPALA-1-CATALOGSERVER-BASE",
     "IMPALA-1-STATESTORE-BASE",
     "SPARK_ON_YARN-1-SPARK_YARN_HISTORY_SERVER-BASE",
-    "YARN-1-JOBHISTORY-BASE",
-    "YARN-1-RESOURCEMANAGER-BASE" ]
+    "KS_INDEXER-1-HBASE_INDEXER-BASE",
+    "HIVE-1-GATEWAY-BASE",
+    "YARN-1-JOBHISTORY-BASE" ]
 }, {
   "refName": "HostTemplate-Workers",
   "cardinality": 3,
   "roleConfigGroupsRefNames": [
     "HDFS-1-DATANODE-BASE",
     "YARN-1-NODEMANAGER-BASE",
-    "IMPALA-1-IMPALAD-BASE" ]
-} ]
+    "IMPALA-1-IMPALAD-BASE",
+    "HBASE-1-REGIONSERVER-BASE",
+    "SOLR-1-SOLR_SERVER-BASE",
+    "HIVE-1-GATEWAY-BASE",
+    "SPARK_ON_YARN-1-GATEWAY-BASE" ]
+}
+{% if (krb5_kdc_type == 'neverever') %}, {
+  "refName" : "HostTemplate-CDSWMaster",
+  "cardinality" : 0,
+  "roleConfigGroupsRefNames" : [ 
+    "CDSW-1-CDSW_APPLICATION-BASE", 
+    "CDSW-1-CDSW_DOCKER-BASE",
+    "CDSW-1-CDSW_MASTER-BASE",
+    "HDFS-1-GATEWAY-BASE", 
+    "HIVE-1-GATEWAY-BASE", 
+    "YARN-1-GATEWAY-BASE" ]
+}, {
+    "refName" : "HostTemplate-CDSWWorker",
+    "cardinality" : 0,
+    "roleConfigGroupsRefNames" : [ 
+    "CDSW-1-CDSW_DOCKER-BASE", 
+    "CDSW-1-CDSW_WORKER-BASE",
+    "HDFS-1-GATEWAY-BASE", 
+    "HIVE-1-GATEWAY-BASE",
+    "YARN-1-GATEWAY-BASE" ]
+}{% endif %}
+]

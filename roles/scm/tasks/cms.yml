@@ -1,19 +1,41 @@
 ---
 
+- include_vars: "{{ inventory_dir }}/group_vars/scm_server.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/scm_server_enc.yml"
+
 # Wait for agents to send heartbeats in case SCM has just been restarted
 # Adding CMS will fail if host details haven't been reported in
 - name: Wait for agent heartbeats
   pause: seconds=30
 
 # Prepare CMS template
-- name: Prepare CMS template
+- name: Prepare CMS role template
   template:
     src: "cms_base.j2"
     dest: "{{ tmp_dir }}/cms_base.json"
-  delegate_to: localhost
+    mode: '0777'
+
+- name: Prepare CMS service template
+  template:
+    src: "cms_service.j2"
+    dest: "{{ tmp_dir }}/cms_service.json"
+    mode: '0777'
 
 # https://cloudera.github.io/cm_api/apidocs/v12/path__cm_service.html#PUT
-- name: Setup the Cloudera Management Services (CMS)
+- name: Check whether the CMS exists
+  uri:
+    url: "{{ cm_api_url }}/cm/service"
+    method: GET
+    body_format: json
+    status_code: 200,404
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: cms_resp1
+
+# https://cloudera.github.io/cm_api/apidocs/v12/path__cm_service.html#PUT
+- name: Setup the Cloudera Management Service Roles
   uri:
     url: "{{ cm_api_url }}/cm/service"
     method: PUT
@@ -28,26 +50,35 @@
   failed_when:
     - "'MGMT' not in cms_resp.content"
     - "'CMS instance already exists' not in cms_resp.content"
-  delegate_to: localhost
+  when: "'MGMT' not in cms_resp1.content"
 
-- debug: var=cms_resp
-
-# https://cloudera.github.io/cm_api/apidocs/v12/path__cm_service_commands_start.html
-- name: Start Cloudera Management Services (CMS)
+- name: Setup the Cloudera Management Service (CMS)
   uri:
-    url: "{{ cm_api_url }}/cm/service/commands/start"
-    method: POST
-    status_code: 200
+    url: "{{ cm_api_url }}/cm/service/config"
+    method: PUT
+    body_format: json
+    body: "{{ lookup('file', ''+ tmp_dir + '/cms_service.json') }}"
+    status_code: 200,400
     force_basic_auth: yes
     user: "{{ scm_default_user }}"
     password: "{{ scm_default_pass }}"
     return_content: yes
-  register: start_resp
-  failed_when: "'startTime' not in start_resp.content"
-
-- debug: var=start_resp
+  register: cms_resp2
+  when: "'MGMT' not in cms_resp1.content"
 
 - file:
     path: "{{ tmp_dir }}/cms_base.json"
     state: absent
-  delegate_to: localhost
+
+- file:
+    path: "{{ tmp_dir }}/cms_service.json"
+    state: absent
+
+- name: Create Navigator audit stream directory
+  file:
+    path: "{{ nav_auditstream_directory }}"
+    state: directory
+    owner: cloudera-scm
+    group: cloudera-scm
+    mode: '0700'
+

@@ -1,0 +1,5 @@
+---
+
+kms_conf_dir: /var/opt/cloudera/kms-keytrustee/keytrustee
+kms_key_dir: /var/opt/cloudera/kms-keytrustee
+

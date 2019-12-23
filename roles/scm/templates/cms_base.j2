@@ -1,6 +1,17 @@
 {
   "name": "mgmt",
   "type": "MGMT",
+  "type" : "MGMT",
+    "config" : {
+      "items" : [ 
+      {% if (scm_web_tls) %}
+      {
+        "name" : "ssl_client_truststore_location",
+        "value" : "{{ tls.truststore_path }}"
+      }
+      {% endif %}
+      ]
+    },
   "roles": [
     {
       "name": "mgmt-SERVICEMONITOR",
@@ -77,7 +88,7 @@
         "items": [
           {
             "name": "firehose_database_host",
-            "value": "{{ hostvars[db_hostname]['inventory_hostname'] }}"
+            "value": "{{ databases.amon.host }}:{{ databases.amon.port }}"
           }, {
             "name": "firehose_database_name",
             "value": "{{ databases.amon.name }}"
@@ -90,8 +101,34 @@
           }, {
             "name": "firehose_database_user",
             "value": "{{ databases.amon.user }}"
+          }, {
+            "name" : "firehose_debug_port",
+            "value" : "-1"
+          }, {
+            "name" : "firehose_debug_tls_port",
+            "value" : "-1"
+          }, {
+            "name": "oom_heap_dump_dir",
+            "value": "{{ oom_heap_dump_dir }}"
+          }, {
+            "name": "oom_heap_dump_enabled",
+            "value": "false"
           }
         ]
+      }
+    }, {
+      "name" : "mgmt-EVENTSERVER-BASE",
+      "displayName" : "Event Server Default Group",
+      "roleType" : "EVENTSERVER",
+      "base" : true,
+      "serviceRef" : {
+         "serviceName" : "mgmt"
+      },
+      "config" : {
+         "items" : [ {
+           "name" : "eventserver_debug_port",
+           "value" : "-1",
+         } ]
       }
     }, {
       "name": "mgmt-REPORTSMANAGER-BASE",
@@ -105,7 +142,7 @@
         "items": [
           {
             "name": "headlamp_database_host",
-            "value": "{{ hostvars[db_hostname]['inventory_hostname'] }}"
+            "value": "{{ databases.rman.host }}:{{ databases.rman.port }}"
           }, {
             "name": "headlamp_database_name",
             "value": "{{ databases.rman.name }}"
@@ -118,6 +155,21 @@
           }, {
             "name": "headlamp_database_user",
             "value": "{{ databases.rman.user }}"
+          }, {
+            "name": "headlamp_scratch_dir",
+            "value": "{{ headlamp_scratch_dir }}"
+          }, {
+            "name" : "headlamp_debug_port",
+            "value" : "-1",
+          }, {
+            "name": "oom_heap_dump_dir",
+            "value": "{{ oom_heap_dump_dir }}"
+          }, {
+            "name": "oom_heap_dump_enabled",
+            "value": "false"
+          }, {
+            "name": "headlamp_heapsize",
+            "value": "8589934592"
           }
         ]
       }
@@ -132,8 +184,14 @@
       "config": {
         "items": [
           {
+            "name" : "NAVIGATOR_role_env_safety_valve",
+            "value" : "NAVIGATOR_EXTRA_CLASSPATH=/opt/cloudera/cm/cloudera-navigator-server/libs/cdh6/apache-log4j-extras-1.2.17.jar",
+          }, {
+            "name" : "log4j_safety_valve",
+            "value" : "log4j.logger.auditStreamEnVision = TRACE,RFA2\nlog4j.appender.RFA2 = org.apache.log4j.rolling.RollingFileAppender\nlog4j.appender.RFA2.rollingPolicy = org.apache.log4j.rolling.TimeBasedRollingPolicy\nlog4j.appender.RFA2.rollingPolicy.FileNamePattern = {{ nav_auditstream_filename_pattern }}\nlog4j.appender.RFA2.layout = org.apache.log4j.PatternLayout\nlog4j.appender.RFA2.layout.ConversionPattern = %d{ISO8601} %m%n\nlog4j.additivity.auditStreamEnVision = false\n",
+          }, {
             "name": "navigator_database_host",
-            "value": "{{ hostvars[db_hostname]['inventory_hostname'] }}"
+            "value": "{{ databases.nav.host }}:{{ databases.nav.port }}"
           }, {
             "name": "navigator_database_name",
             "value": "{{ databases.nav.name }}"
@@ -146,6 +204,38 @@
           }, {
             "name": "navigator_database_user",
             "value": "{{ databases.nav.user }}"
+          {% if (cdh_tls) %}
+          }, {
+            "name" : "ssl_enabled",
+            "value" : "true",
+          }, {
+            "name" : "ssl_server_keystore_keypassword",
+            "value" : "{{ tls.keystore_password }}"
+          }, {
+            "name" : "ssl_server_keystore_location",
+            "value" : "{{ tls.keystore_path }}"
+          }, {
+            "name" : "ssl_server_keystore_password",
+            "value" : "{{ tls.keystore_password }}"
+          }, {
+            "name" : "navigator_truststore_file",
+            "value" : "{{ tls.truststore_path }}"
+          }, {
+            "name" : "navigator_truststore_password",
+            "value" : "{{ tls.truststore_password }}"
+          {% endif %}
+          }, {
+            "name" : "navigator_debug_port",
+            "value" : "-1"
+          }, {
+            "name": "oom_heap_dump_dir",
+            "value": "{{ oom_heap_dump_dir }}"
+          }, {
+            "name": "oom_heap_dump_enabled",
+            "value": "false"
+          }, {
+            "name": "navigator_heapsize",
+            "value": "10737418240"
           }
         ]
       }
@@ -161,7 +251,7 @@
         "items": [
           {
             "name": "nav_metaserver_database_host",
-            "value": "{{ hostvars[db_hostname]['inventory_hostname'] }}"
+            "value": "{{ databases.navms.host }}:{{ databases.navms.port }}"
           }, {
             "name": "nav_metaserver_database_name",
             "value": "{{ databases.navms.name }}"
@@ -174,6 +264,135 @@
           }, {
             "name": "nav_metaserver_database_user",
             "value": "{{ databases.navms.user }}"
+          }, {
+            "name": "data_dir",
+            "value": "{{ navms_data_dir }}"
+          }, {
+            "name": "oom_heap_dump_dir",
+            "value": "{{ oom_heap_dump_dir }}"
+          }, {
+            "name" : "allow_usage_data",
+            "value" : "false",
+          }, {
+            "name" : "auth_backend_order",
+            "value" : "CM_THEN_EXTERNAL",
+          }, {
+            "name" : "external_auth_type",
+            "value" : "{{ ldap_rdom.auth_type  }}",
+          }, {
+            "name" : "nav_ldap_bind_dn",
+            "value" : "{{ ldap_rdom.bind_dn }}",
+          }, {
+            "name" : "nav_ldap_bind_pw",
+            "value" : "{{ ldap_rdom.bind_pass }}",
+          }, {
+            "name" : "nav_ldap_group_search_base",
+            "value" : "{{ ldap_rdom.base_dn }}",
+          }, {
+            "name" : "nav_ldap_group_search_filter",
+            "value" : "({{ ldap_rdom.group_member_attr }}={0})",
+          }, {
+            "name" : "nav_ldap_groups_search_filter",
+            "value" : "(&{{ ldap_rdom.group_filter }}({{ ldap_rdom.group_name_attr }}=*{0}*))",
+          }, {
+            "name" : "nav_ldap_url",
+            "value" : "{{ ldap_rdom.url }}",
+          }, {
+            "name" : "nav_ldap_user_search_base",
+            "value" : "{{ ldap_rdom.base_dn }}",
+          }, {
+            "name" : "nav_ldap_user_search_filter",
+            "value" : "({{ ldap_rdom.user_name_attr }}={0})",
+          }, {
+            "name" : "nav_nt_domain",
+            "value" : "{{ ldap_rdom.domain }}",
+          }, {
+            "name" : "navigator_heapsize",
+            "value" : "34359738368",
+          }, {
+            "name" : "oom_heap_dump_enabled",
+            "value" : "false",
+          }
+          {% if (scm_web_tls) %}
+          , {
+            "name" : "ssl_enabled",
+            "value" : "true",
+          }, {
+            "name" : "ssl_server_keystore_keypassword",
+            "value" : "{{ tls.keystore_password }}",
+          }, {
+            "name" : "ssl_server_keystore_location",
+            "value" : "{{ tls.keystore_path }}"
+          }, {
+            "name" : "ssl_server_keystore_password",
+            "value" : "{{ tls.keystore_password }}",
+          }
+          {% endif %}
+          , {
+            "name": "oom_heap_dump_enabled",
+            "value": "false"
+          }
+        ]
+      }
+    }, {
+      "name": "mgmt-SERVICEMONITOR-BASE",
+      "displayName": "Service Monitor Default Group",
+      "roleType": "SERVICEMONITOR",
+      "base": true,
+      "serviceRef": {
+        "serviceName": "mgmt"
+      },
+      "config": {
+        "items": [
+          {
+            "name" : "firehose_debug_port",
+            "value" : "-1",
+          }, {
+            "name": "firehose_heapsize",
+            "value": "2147483648"
+          }, {
+            "name": "firehose_non_java_memory_bytes",
+            "value": "12884901888"
+          }, {
+            "name": "firehose_storage_dir",
+            "value": "{{ smon_firehose_storage_dir }}"
+          }, {
+            "name": "oom_heap_dump_dir",
+            "value": "{{ oom_heap_dump_dir }}"
+          }, {
+            "name": "oom_heap_dump_enabled",
+            "value": "false"
+          }
+        ]
+      }
+    }, {
+      "name": "mgmt-HOSTMONITOR-BASE",
+      "displayName": "Host Monitor Default Group",
+      "roleType": "HOSTMONITOR",
+      "base": true,
+      "serviceRef": {
+        "serviceName": "mgmt"
+      },
+      "config": {
+        "items": [
+          {
+            "name" : "firehose_debug_port",
+            "value" : "-1",
+          }, {
+            "name" : "firehose_debug_tls_port",
+            "value" : "-1",
+          }, {
+            "name": "firehose_non_java_memory_bytes",
+            "value": "4294967296"
+          }, {
+            "name": "firehose_storage_dir",
+            "value": "{{ hmon_firehose_storage_dir }}"
+          }, {
+            "name": "oom_heap_dump_dir",
+            "value": "{{ oom_heap_dump_dir }}"
+          }, {
+            "name": "oom_heap_dump_enabled",
+            "value": "false"
           }
         ]
       }

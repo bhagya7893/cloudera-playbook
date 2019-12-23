@@ -17,7 +17,7 @@
 from ansible.plugins.action import ActionBase
 from cm_api.api_client import ApiException
 from cm_api.api_client import ApiResource
-
+import sys
 try:
     from __main__ import display
 except ImportError:
@@ -41,15 +41,26 @@ class ActionModule(ActionBase):
         # Get SCM host details from inventory
         try:
             scm_host = task_vars["groups"]["scm_server"][0]
-            scm_port = task_vars["hostvars"][scm_host]["scm_port"]
-            scm_user = task_vars["hostvars"][scm_host]["scm_default_user"]
-            scm_pass = task_vars["hostvars"][scm_host]["scm_default_pass"]
+            scm_port = task_vars["scm_port"]
+            scm_user = task_vars["scm_default_user"]
+            scm_pass = task_vars["scm_default_pass"]
+            scm_tls = task_vars["scm_web_tls"]
+            scm_port_tls = task_vars.get("scm_port_tls")
+            use_tls = task_vars.get("use_tls")
+
         except KeyError as e:
             result['failed'] = True
             result['msg'] = e.message
             return result
 
-        api = self.get_api_handle(scm_host, scm_port, scm_user, scm_pass)
+        if use_tls is None or use_tls == False:
+           scm_port_in_use = scm_port
+           tls=False
+        else:
+           scm_port_in_use = scm_port_tls
+           tls=True
+
+        api = self.get_api_handle(scm_host, scm_port_in_use, scm_user, scm_pass, tls)
         scm_host_list = api.get_all_hosts()
         display.vv("Retrieved %d host(s) from SCM" % len(scm_host_list))
 

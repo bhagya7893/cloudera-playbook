@@ -1,0 +1,165 @@
+---
+
+- include_vars: "{{ inventory_dir }}/group_vars/all"
+- include_vars: "{{ inventory_dir }}/group_vars/cdh_servers.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/kts_servers.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/scm_server.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/db_server.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/krb5_server.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/tls_enc.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/ldap_enc.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/scm_server_enc.yml"
+
+- set_fact: cm_api_url={{ "https://{{ hostvars[scm_hostname]['inventory_hostname'] }}:{{ scm_port_tls }}" if scm_web_tls==True else "http://{{ hostvars[scm_hostname]['inventory_hostname'] }}:{{ scm_port }}" }}
+
+- name: Get Cloudera Manager API version
+  uri:
+    url: "{{ cm_api_url }}/api/version"
+    method: GET
+    status_code: 200
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    force_basic_auth: yes
+    return_content: yes
+  register: result
+
+- set_fact: cm_api_url="{{ cm_api_url }}/api/{{ result.content }}"
+
+- name: Check whether cluster exists
+  uri:
+    url: "{{ cm_api_url }}/cm/service"
+    method: GET
+    status_code: 200,404
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: clusters_resp
+
+- debug: var=clusters_resp
+
+- set_fact: cms_started={{ 'True' if clusters_resp.json.serviceState == "STARTED" else 'False' }}
+
+- name: Start CMS cluster
+  uri:
+    url: "{{ cm_api_url }}/cm/service/commands/start"
+    method: POST
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: template_resp
+  when: cms_started == False
+
+- debug: var=template_resp
+
+- set_fact: command_id="{{ template_resp.json.id }}"
+  when: cms_started == False
+
+# https://cloudera.github.io/cm_api/apidocs/v13/path__commands.html
+- name: Wait for cluster to start
+  uri:
+    url: "{{ cm_api_url }}/commands/{{ command_id }}"
+    body_format: json
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: cluster_start_result
+  until: cluster_start_result.json.active == false
+  retries: 5
+  delay: 30
+  when: cms_started == False
+
+- name: Check whether cluster exists
+  uri:
+    url: "{{ cm_api_url }}/clusters/{{ kts_display_name }}"
+    method: GET
+    status_code: 200,404
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: clusters_resp
+
+- set_fact: cluster_exists={{ 'True' if clusters_resp.status == 200 else 'False' }}
+- debug: msg="Cluster '{{ kts_display_name }}' exists - {{ cluster_exists }}"
+
+
+# https://www.cloudera.com/documentation/enterprise/latest/topics/install_cluster_template.html
+- name: Prepare cluster template
+  template:
+    src: "kts.j2"
+    dest: "{{ tmp_dir }}/kts.json"
+    mode: 0777
+  when: 
+    - cluster_exists == False
+
+#- debug: var= "{{ lookup('file', ''+ tmp_dir + '/cluster.json') }}"
+
+# https://cloudera.github.io/cm_api/apidocs/v13/path__cm_importClusterTemplate.html
+- name: Import cluster template
+  uri:
+    url: "{{ cm_api_url }}/cm/importClusterTemplate?addRepositories=true"
+    method: POST
+    body_format: json
+    body: "{{ lookup('file', ''+ tmp_dir + '/kts.json') }}"
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: template_resp
+  when:
+    - cluster_exists == False
+
+- debug: var=template_resp
+  when:
+    - cluster_exists == False
+
+- set_fact: command_id="{{ template_resp.json.id }}"
+  when:
+    - cluster_exists == False
+
+- debug: msg="Import cluster template command ID - {{ command_id }}"
+  when:
+    - cluster_exists == False
+
+- debug: msg="Login to Cloudera Manager to monitor import progress - http://{{ hostvars[scm_hostname]['inventory_hostname'] }}:{{ scm_port }}/cmf/commands/commands"
+  when:
+    - cluster_exists == False
+
+- name: Save template to home dir
+  shell: cp "{{ tmp_dir }}"/kts.json /tmp/kts.json.backup
+  ignore_errors: True
+
+- file:
+    path: "{{ tmp_dir }}/kts.json"
+    state: absent
+  ignore_errors: True
+
+- name: Wait for first run wizard to complete
+  uri:
+    url: "{{ cm_api_url }}/commands/{{ command_id }}"
+    body_format: json
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: frw_result
+  until: frw_result.json.active == false
+  retries: 25
+  delay: 60
+  when:
+    - cluster_exists == False
+
+- name: Create temp dir for Fetching Keys
+  file: 
+    path: /tmp/kts
+    state: directory
+    owner: root
+    group: root
+    mode: '0644'

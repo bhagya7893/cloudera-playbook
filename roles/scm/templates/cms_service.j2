@@ -1,0 +1,13 @@
+{
+    "items" : [
+      {% if (scm_web_tls) %}
+      {
+        "name": "ssl_client_truststore_location",
+        "value": "{{ tls.truststore_path }}"
+      }, {
+        "name": "ssl_client_truststore_password",
+        "value": "{{ tls.truststore_password }}"
+      }
+      {% endif %}
+  ]
+}

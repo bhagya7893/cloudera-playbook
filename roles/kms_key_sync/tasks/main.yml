@@ -1,0 +1,126 @@
+---
+
+- include_vars: "{{ inventory_dir }}/group_vars/scm_server.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/scm_server_enc.yml"
+
+- name: Prepare local directories for kms files
+  local_action:
+    module: file
+    path: "/tmp/kms/"
+    owner: root
+    group: root
+    state: directory
+    mode: 0777
+    recurse: yes
+
+
+- name: Fetch key files from Active KMS
+  fetch:
+    src: "{{ kms_key_dir }}/keytrustee/.keytrustee/{{ item }}"
+    dest: "/tmp/kms/"
+    fail_on_missing: no
+  delegate_to: "{{ hostvars[groups['kms_servers'][0]]['inventory_hostname'] }}"
+  with_items:
+    - gpg.conf
+    - keytrustee.conf
+    - logging.conf
+    - pubring.gpg
+    - pubring.gpg~
+    - random_seed
+    - secring.gpg
+    - trustdb.gpg
+
+- name: Copy key files to passive KMS
+  copy:
+   src: "/tmp/kms/{{ hostvars[groups['kms_servers'][0]]['inventory_hostname'] }}{{ kms_key_dir }}/keytrustee/.keytrustee"
+   dest: "{{ kms_key_dir }}/keytrustee/"
+   owner: keytrustee-kms
+   group: keytrustee-kms
+   mode: '0600'
+
+- name: Delete local directories for kts files
+  local_action:
+    module: file
+    path: "/tmp/kms/"
+    owner: root
+    group: root
+    state: absent
+  run_once: true
+
+- set_fact: cm_api_url={{ "https://{{ hostvars[scm_hostname]['inventory_hostname'] }}:{{ scm_port_tls }}" if scm_web_tls==True else "http://{{ hostvars[scm_hostname]['inventory_hostname'] }}:{{ scm_port }}" }}
+
+- name: Get Cloudera Manager API version
+  uri:
+    url: "{{ cm_api_url }}/api/version"
+    method: GET
+    status_code: 200
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    force_basic_auth: yes
+    return_content: yes
+  register: result
+
+- set_fact: cm_api_url="{{ cm_api_url }}/api/{{ result.content }}"
+
+- name: Restart Cluster to pick up KMS changes
+  uri:
+    url: "{{ cm_api_url }}/clusters/{{ cluster_display_name }}/commands/restart"
+    method: POST
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    body_format: "json"
+    return_content: yes
+  register: cluster_restart_resp
+  run_once: true
+
+- debug: var=cluster_restart_resp
+
+- set_fact: command_id="{{ cluster_restart_resp.json.id }}"
+
+- name: Wait for service to start
+  uri:
+    url: "{{ cm_api_url }}/commands/{{ command_id }}"
+    body_format: json
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: cluster_start_result
+  until: cluster_start_result.json.active == false
+  retries: 25
+  delay: 30
+  run_once: true
+
+- name: Deploy Cluster Client Config
+  uri:
+    url: "{{ cm_api_url }}/clusters/{{ cluster_display_name }}/commands/deployClientConfig"
+    method: POST
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    body_format: "json"
+    return_content: yes
+  register: cluster_conf_resp
+  run_once: true
+
+- set_fact: command_id="{{ cluster_conf_resp.json.id }}"
+
+- name: Wait for service to start
+  uri:
+    url: "{{ cm_api_url }}/commands/{{ command_id }}"
+    body_format: json
+    status_code: 200
+    force_basic_auth: yes
+    user: "{{ scm_default_user }}"
+    password: "{{ scm_default_pass }}"
+    return_content: yes
+  register: cluster_conf_result
+  until: cluster_conf_result.json.active == false
+  retries: 25
+  delay: 30
+  run_once: true
+

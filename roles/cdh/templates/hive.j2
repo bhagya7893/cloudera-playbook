@@ -3,9 +3,6 @@
   "serviceType": "HIVE",
   "serviceConfigs": [
     {
-      "name": "hive_metastore_database_host",
-      "value": "{{ hostvars[db_hostname]['inventory_hostname'] }}"
-    }, {
       "name": "hive_metastore_database_type",
       "value": "{{ databases.metastore.type }}"
     }, {
@@ -18,6 +15,37 @@
       "name": "hive_metastore_database_password",
       "value": "{{ databases.metastore.pass }}"
     }, {
+      "name": "hive_metastore_database_host",
+      "value": "{{ databases.metastore.host }}"
+    }, {
+      "name": "hive_metastore_database_port",
+      "value": "{{ databases.metastore.port }}"
+    }, {
+      "name" : "audit_event_log_dir",
+      "value" : "{{ log_base }}/hive/audit"
+    }, {
+      "name" : "lineage_event_log_dir",
+      "value" : "{{ log_base }}/hive/lineage"
+    }
+    {% if (cdh_tls) %}
+      , {
+       "name" : "hiveserver2_enable_ssl",
+      "value" : "true"
+    }, {
+      "name" : "hiveserver2_keystore_path",
+      "value" : "{{ tls.keystore_path }}"
+    }, {
+      "name" : "hiveserver2_truststore_file",
+      "value" : "{{ tls.truststore_path }}"
+    }, {
+      "name" : "hiveserver2_keystore_password",
+      "value" : "{{ tls.keystore_password }}"
+    }, {
+      "name" : "hiveserver2_truststore_password",
+      "value" : "{{ tls.truststore_password }}"
+    }
+    {% endif %}
+    , {
       "name": "spark_on_yarn_service",
       "ref": "SPARK_ON_YARN-1"
     }, {
@@ -29,6 +57,10 @@
     }, {
       "name": "sentry_service",
       "ref": "SENTRY-1"
+    }, {
+      "name": "hbase_service",
+      "ref": "HBASE-1"
+
     }
   ],
   "roleConfigGroups": [
@@ -38,29 +70,71 @@
       "configs": [],
       "base": true
     }, {
-      "refName": "HIVE-1-WEBHCAT-BASE",
-      "roleType": "WEBHCAT",
-      "configs": [
-        {
-          "name": "hive_webhcat_address_port",
-          "value": "7272"
-        }
-      ],
-      "base": true
-    }, {
       "refName": "HIVE-1-HIVEMETASTORE-BASE",
       "roleType": "HIVEMETASTORE",
-      "configs": [],
+      "configs": [{
+        "name" : "metastore_canary_health_enabled",
+        "value" : "false"
+      }, {
+        "name" : "hive_log_dir",
+        "value" : "{{ log_base }}/hive"
+      }, {
+        "name" : "hive_metastore_server_max_message_size",
+        "value" : "859832320"
+      }, {
+        "name" : "oom_heap_dump_enabled",
+        "value" : "false"
+      }, {
+        "name" : "hive_metastore_delegation_token_store",
+        "value" : "org.apache.hadoop.hive.thrift.DBTokenStore"
+      }, {
+        "name" : "hive_enable_db_notification",
+        "value" : "true"
+      } ],
       "base": true
     }, {
       "refName": "HIVE-1-HIVESERVER2-BASE",
       "roleType": "HIVESERVER2",
-      "configs": [
-        {
-          "name": "hiveserver2_enable_impersonation",
-          "value": "false"
-        }
-      ],
+      "configs": [ {
+        "name" : "hiveserver2_spark_yarn_executor_memory_overhead",
+        "value" : "107"
+      }, {
+        "name" : "hiveserver2_webui_port",
+        "value" : "0"
+      }, {
+        "name" : "hive_server2_logging_operation_log_location",
+        "value" : "{{ log_base }}/hive/operation_logs"
+      }, {
+        "name" : "hive_log_dir",
+        "value" : "{{ log_base }}/hive"
+      } , {
+        "name" : "hiveserver2_load_balancer",
+        "value" : "{{ hostvars[groups['haproxy'][0]]['inventory_hostname'] }}:10000"
+      }, {
+        "name" : "hiveserver2_spark_driver_memory",
+        "value" : "966367641"
+      }, {
+        "name" : "hiveserver2_java_heapsize",
+        "value" : "8589934592"
+      }, {
+        "name" : "hiveserver2_enable_impersonation",
+        "value" : "false"
+      }, {
+        "name" : "oom_heap_dump_enabled",
+        "value" : "false"
+      }, {
+        "name" : "hiveserver2_idle_session_timeout",
+        "value" : "86400000"
+      }, {
+        "name" : "hiveserver2_spark_executor_cores",
+        "value" : "6"
+      }, {
+        "name" : "hiveserver2_spark_yarn_driver_memory_overhead",
+        "value" : "102"
+      }, {
+        "name" : "hiveserver2_spark_executor_memory",
+        "value" : "1016007228"
+      } ],
       "base": true
     }
   ]

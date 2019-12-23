@@ -1,0 +1,52 @@
+- include_vars: "{{ inventory_dir }}/group_vars/scm_server.yml"
+
+- name: Permission data dirs on Master Nodes
+  file:
+    path: "{{ item }}"
+    owner: root
+    group: root
+    mode: '0755'
+  when: scm_version[0] == "5"
+  with_items:
+    - /data
+    - /data/1
+    - /data/2
+
+- name: Create DFS dirs
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  when: scm_version[0] == "5"
+  with_items:
+    - /data/1/dfs
+    - /data/2/dfs
+
+- name: Create NN dirs
+  file:
+    path: /data/1/dfs/nn
+    state: directory
+    owner: hdfs
+    group: hadoop
+    mode: '0700'
+  when: scm_version[0] == "5"
+
+- name: Create SNN dirs
+  file:
+    path: /data/1/dfs/snn
+    state: directory
+    owner: hdfs
+    group: hadoop
+    mode: '0700'
+  when: scm_version[0] == "5"
+
+- name: Create JN dirs
+  file:
+    path: /data/2/dfs/jn
+    state: directory
+    owner: hdfs
+    group: hadoop
+    mode: '0700'
+  when: scm_version[0] == "5"

@@ -1,0 +1,98 @@
+{
+    "refName" : "SOLR-1",
+    "serviceType" : "SOLR",
+    "serviceConfigs" : [ {
+      "name" : "hdfs_service",
+      "ref" : "HDFS-1"
+    }, {
+      "name" : "zookeeper_service",
+      "ref" : "ZOOKEEPER-1"
+    }, {
+      "name" : "audit_event_log_dir",
+      "value" : "{{ log_base }}/solr/audit"
+    }, {
+      "name" : "solr_env_safety_valve",
+      "value" : "HTTPFS_MAX_HTTP_HEADER_SIZE=500000000\nJAVA_NAMING_REFERRAL=follow\nGC_TUNE=-XX:+UseG1GC"
+    }, {
+      "name" : "solr_core_site_safety_valve",
+      "value" : ""
+    }, {
+      "name" : "solr_sentry_safety_valve",
+      "value" : "<property><name>sentry.provider.backend.generic.cache.enabled</name><value>true</value><description>Enables caching so that each query isn't going back to Sentry all the time</description></property><property><name>sentry.provider.backend.generic.cache.ttl.ms</name><value>600000</value><description>Set cache timeout to 10 minutes</description></property>"
+    }, {
+      "name" : "navigator_audit_event_filter",
+      "value" : "{\n  \"rules\": [\n    {\n      \"action\": \"discard\",\n      \"fields\": [\n        {\n          \"name\": \"operation\",\n          \"match\": \"add\"\n        }\n      ]\n    },\n    {\n      \"action\": \"discard\",\n      \"fields\": [\n        {\n          \"name\": \"operation\",\n          \"match\": \"finish\"\n        }\n      ]\n    }\n  ],\n  \"defaultAction\": \"accept\"\n}"
+    }, {
+      "name": "solr_security_authentication",
+      {% if (krb5_kdc_type == 'ad') or (krb5_kdc_type == 'mit') %}
+      "value": "kerberos"
+    }, {
+      "name" : "sentry_service",
+      "value" : "sentry"
+    }, {
+      "name" : "navigator_audit_enabled",
+      "value" : "true"
+      {% else %}
+      "value": "simple"
+    }, {
+      "name" : "sentry_service",
+      "value" : "none"
+      {% endif %}
+    }
+    {% if (cdh_tls) %}
+    , {
+      "name" : "solr_https_keystore_password",
+      "value" : "{{ tls.keystore_password }}"
+    }, {
+      "name" : "solr_https_keystore_file",
+      "value" : "{{ tls.keystore_path }}"
+    }, {
+      "name" : "solr_use_ssl",
+      "value" : "true"
+    }, {
+      "name" : "solr_https_truststore_file",
+      "value" : "{{ tls.truststore_path }}"
+    }, {
+      "name" : "solr_https_truststore_password",
+      "value" : "{{ tls.truststore_password }}"
+    }
+    {% endif %}
+    ],
+    "roleConfigGroups" : [ {
+      "refName" : "SOLR-1-SOLR_SERVER-BASE",
+      "roleType" : "SOLR_SERVER",
+      "configs" : [ {
+        "name" : "solr_java_heapsize",
+        "value" : "53687091200"
+      }, {
+        "name" : "solr_log_dir",
+        "value" : "{{ log_base }}/solr"
+      }, {
+        "name" : "log4j_safety_valve",
+        "value" : ""
+      }, {
+        "name" : "solr_java_direct_memory_size",
+        "value" : "17179869184"
+      }, {
+        "name" : "oom_heap_dump_enabled",
+        "value" : "false"
+      }, {
+        "name" : "solr_load_balancer",
+        "value" : "{{ hostvars[groups['haproxy'][0]]['inventory_hostname'] }}:8985"
+      }, {
+        "name" : "solr_java_opts",
+        "value" : ""
+      }, {
+        "name" : "stacks_collection_directory",
+        "value" : "{{ log_base }}/solr"
+      }, {
+        "name" : "stacks_collection_enabled",
+        "value" : "true"
+      } ],
+      "base" : true
+    }, {
+      "refName" : "SOLR-1-GATEWAY-BASE",
+      "roleType" : "GATEWAY",
+      "base" : true
+    } ]
+  }

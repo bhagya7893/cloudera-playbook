@@ -1,0 +1,33 @@
+---
+- include_vars: "{{ inventory_dir }}/group_vars/cdh_servers.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/tls_enc.yml"
+
+- name: Install HAProxy
+  yum: name=haproxy state=latest
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['haproxy'] }}"
+
+- name: Set haproxy.cfg
+  template: src=haproxy.j2 dest=/etc/haproxy/haproxy.cfg backup=yes
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['haproxy'] }}"
+
+- name: Create combined key and pem
+  shell: "cat /opt/cloudera/security/x509/localhost.pem /opt/cloudera/security/x509/localhost.key | sed -ne '/-BEGIN/,/-END/p' > /etc/haproxy/combinedKeyAndCert.pem"
+
+- name: Set combined key and pem permissions
+  file:
+    path: /etc/haproxy/combinedKeyAndCert.pem
+    owner: haproxy
+    group: haproxy
+    mode: 0400
+
+- name: Enable HAProxy
+  service:
+    name: haproxy
+    enabled: yes
+    state: restarted
+
+- name: Save template to home dir
+  shell: "cp /etc/haproxy/haproxy.cfg {{ tmp_dir }}/haproxy.cfg.bak"
+

@@ -1,0 +1,162 @@
+{
+    "refName" : "HBASE-1",
+    "serviceType" : "HBASE",
+    "serviceConfigs" : [ {
+      "name" : "zookeeper_service",
+      "ref" : "ZOOKEEPER-1"
+    }, {
+      "name" : "hbase_superuser",
+      "value" : "hbase"
+    }, {
+      "name" : "hbase_enable_replication",
+      "value" : "true"
+    }, {
+      "name" : "hbase_thriftserver_support_proxyuser",
+      "value" : "true"
+    }, {
+      "name" : "hdfs_service",
+      "ref" : "HDFS-1"
+    }, {
+      "name" : "audit_event_log_dir",
+      "value" : "{{ log_base }}/hbase/audit"
+    }, {
+      "name" : "hbase_thriftserver_http",
+      "value" : "true"
+    }, {
+      "name" : "hbase_enable_indexing",
+      "value" : "true"
+    } , {
+      "name" : "hbase_superuser",
+      "variable" : "HBASE_SUPERUSER"
+    }, {
+      "name" : "hbase_enable_replication",
+      "value" : "true"
+    }, {
+      "name" : "hbase_thriftserver_http",
+      "value" : "true"
+    }
+     {% if (cdh_tls) %}
+    , {
+      "name" : "ssl_server_keystore_keypassword",
+      "value" : "{{ tls.keystore_password }}"
+    }, {
+      "name" : "ssl_server_keystore_location",
+      "value" : "{{ tls.keystore_path }}"
+    }, {
+      "name" : "ssl_server_keystore_password",
+      "value" : "{{ tls.keystore_password }}"
+    }, {
+      "name" : "hbase_hadoop_ssl_enabled",
+      "value" : "true"
+    }
+    {% endif %}
+    {% if (krb5_kdc_type == 'ad') or (krb5_kdc_type == 'mit') %}
+    , {
+      "name" : "hbase_thriftserver_support_proxyuser",
+      "value" : "true"
+    },{
+      "name" : "hbase_restserver_security_authentication",
+      "value" : "kerberos"
+    }, {
+      "name" : "hbase_thriftserver_security_authentication",
+      "value" : "auth-conf"
+    }, {
+      "name" : "hbase_rpc_protection",
+      "value" : "privacy"
+    }, {
+      "name" : "hbase_security_authorization",
+      "value" : "true"
+    }, {
+      "name" : "hbase_security_authentication",
+      "value" : "kerberos"
+    }, {
+      "name" : "hbase_service_config_safety_valve",
+      "value" : "<property><name>hbase.security.exec.permission.checks</name><value>true</value><description>Without this option, all users will continue to have acess to execute endpoint coprocessors. This options is not enabled when you enable HBase Secure Authorization for backwards compatability.</description></property>"
+    }
+
+    {% endif %}
+     ],
+    "roleConfigGroups" : [ {
+      "refName" : "HBASE-1-REGIONSERVER-BASE",
+      "roleType" : "REGIONSERVER",
+      "configs" : [ {
+        "name" : "hbase_regionserver_log_dir",
+        "value" : "{{ log_base }}/hbase"
+      }, {
+        "name" : "oom_heap_dump_enabled",
+        "value" : "false"
+      }, {
+        "name" : "hbase_regionserver_java_heapsize",
+        "value" : "2631925760"
+      } ],
+      "base" : true
+    }, {
+      "refName" : "HBASE-1-HBASERESTSERVER-BASE",
+      "roleType" : "HBASERESTSERVER",
+      "configs" : [ {
+        "name" : "oom_heap_dump_enabled",
+        "value" : "false"
+      }, {
+        "name" : "hbase_restserver_log_dir",
+        "value" : "{{ log_base }}/hbase"
+      }
+      {% if (cdh_tls) %}
+      , {
+        "name" : "hbase_restserver_keystore_file",
+        "value" : "{{ tls.keystore_path }}"
+      }, {
+        "name" : "hbase_restserver_keystore_keypassword",
+        "value" : "{{ tls.keystore_password }}"
+      }, {
+        "name" : "hbase_restserver_ssl_enable",
+        "value" : "true"
+      }, {
+        "name" : "hbase_restserver_keystore_password",
+        "value" : "{{ tls.keystore_password }}"
+      }
+     {% endif %}
+      ],
+      "base" : true
+    }, {
+      "refName" : "HBASE-1-MASTER-BASE",
+      "roleType" : "MASTER",
+      "configs" : [ {
+        "name" : "oom_heap_dump_enabled",
+        "value" : "false"
+      }, {
+        "name" : "hbase_master_log_dir",
+        "value" : "{{ log_base }}/hbase"
+      } ],
+      "base" : true
+    }, {
+      "refName" : "HBASE-1-HBASETHRIFTSERVER-BASE",
+      "roleType" : "HBASETHRIFTSERVER",
+      "configs" : [ {
+        "name" : "oom_heap_dump_enabled",
+        "value" : "false"
+      }, {
+        "name" : "hbase_thriftserver_log_dir",
+        "value" : "{{ log_base }}/hbase"
+      }
+      {% if (cdh_tls) %} 
+      , {
+        "name" : "hbase_thriftserver_http_keystore_password",
+        "value" : "{{ tls.keystore_password }}"
+      }, {
+        "name" : "hbase_thriftserver_http_keystore_keypassword",
+        "value" : "{{ tls.keystore_password }}"
+      }, {
+        "name" : "hbase_thriftserver_http_keystore_file",
+        "value" : "{{ tls.keystore_path }}"
+      }, {
+        "name" : "hbase_thriftserver_http_use_ssl",
+        "value" : "true"
+      } 
+
+      {% endif %}
+      ],
+      "base" : true
+    } ],
+      "roles" : [ 
+     ]
+  }

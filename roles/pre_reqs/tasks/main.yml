@@ -1,0 +1,196 @@
+- include_vars: "{{ inventory_dir }}/group_vars/tls_enc.yml"
+
+- name: change swappiness value
+  sysctl:
+    name: vm.swappiness
+    value: 1
+    state: present
+    reload: true
+
+- name: change overcommit value
+  sysctl:
+    name: vm.overcommit_memory
+    value: 1
+    state: present
+    reload: true
+
+- name: disable tuned service
+  systemd:
+    name: tuned
+    state: stopped
+    enabled: no 
+
+- name: install nscd service
+  yum:
+    name: nscd
+    state: present
+
+- name: enable nscd service
+  systemd:
+    name: nscd
+    state: started
+    enabled: yes
+
+- name: nscd config
+  copy:
+    backup: yes
+    src: nscd.conf
+    dest: /etc/nscd.conf
+    owner: root
+    group: root
+    mode: '0644'
+  register: nscd_config
+
+- name: Restart the nscd service
+  systemd:
+    name: nscd
+    state: restarted
+    enabled: yes
+  ignore_errors: true
+  when: nscd_config.changed
+
+- name: disable chronyd service
+  systemd:
+    name: chronyd
+    state: stopped
+    enabled: no
+
+- name: disable transparent huge pages until reboot - enabled conf
+  shell: 'echo never > /sys/kernel/mm/transparent_hugepage/enabled'
+  ignore_errors: true
+
+- name: disable transparent huge pages until reboot - defrag conf
+  shell: 'echo never > /sys/kernel/mm/transparent_hugepage/defrag'
+  ignore_errors: true
+
+- name: Check for THP in rc.local
+  shell: grep -c "enabled" /etc/rc.d/rc.local || true
+  register: thp_enabled
+
+- name: Check for THP in rc.local
+  shell: grep -c "defrag" /etc/rc.d/rc.local || true
+  register: thp_defrag
+
+- name: Disable THP in rc.local - enabled conf
+  lineinfile:
+    backup: yes
+    path: /etc/rc.d/rc.local
+    line: 'echo never > /sys/kernel/mm/transparent_hugepage/enabled'
+    mode: '0755'
+  when: thp_enabled.stdout == "0"
+
+- name: Disable THP in rc.local - defrag conf
+  lineinfile:
+    backup: yes
+    path: /etc/rc.d/rc.local
+    line: 'echo never > /sys/kernel/mm/transparent_hugepage/defrag'
+    mode: '0755'
+  when: thp_defrag.stdout == "0"
+
+- name: Disable THP in GRUB
+  lineinfile:
+    backup: yes
+    state: present
+    path: /etc/default/grub
+    backrefs: yes
+    regexp: '^(GRUB_CMDLINE_LINUX=(?!.*hugepage)\"[^\"]+)(\".*)'
+    line: '\1 transparent_hugepage=never\2'
+
+- name: Disable THP - rebuild GRUB
+  shell: "grub2-mkconfig -o /boot/grub2/grub.cfg"
+
+- name: data permissions
+  file:
+    path: /data
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Set SELINUX to permissive - config
+  lineinfile:
+    dest: /etc/selinux/config
+    regexp: ^SELINUX=
+    line: SELINUX=permissive
+    state: present
+
+- name: Set SELINUX to permissive - setenforce
+  shell: "setenforce 0"
+
+#- name: Verify required SSSD packages have been yum installed
+#  yum:
+#    name: "{{ item }}"
+#    state: present
+#  with_items:
+#    - adcli
+#    - sssd
+#    - realmd
+#    - oddjob
+#    - oddjob-mkhomedir
+#    - samba-common
+#    - samba-common-tools
+
+- name: Yum Install required KRB5 packages 
+  yum: 
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - krb5-workstation
+    - krb5-libs
+    - openldap
+    - openldap-clients
+
+- name: Deploy KRB5 config
+  template:
+    backup: yes
+    src: krb5.conf.j2
+    dest: /etc/krb5.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Remove conflicting krb5 config
+  file:
+    path: /var/lib/sss/pubconf/krb5.include.d/krb5_libdefaults
+    state: absent
+
+- name: 
+  file:
+    path: /var/opt/cloudera/
+    state: directory
+    owner: root
+    group: root
+    mode: '0777'
+
+#- name: Restart the messagebus service
+#  systemd:
+#    name: messagebus
+#    state: restarted
+#    enabled: yes
+
+#- name: Restart the realmd service
+#  systemd:
+#    name: realmd
+#    state: restarted
+#    enabled: yes
+
+#- name: Restart the sssd service
+#  systemd:
+#    name: sssd
+#    state: restarted
+#    enabled: yes
+
+#- name: Restart the nscd service
+#  systemd:
+#    name: nscd
+#    state: restarted
+#    enabled: yes
+#
+
+- name: Set disk reserved block size to zero
+  shell: |
+     for disk in $(df -h --output=source --type=ext4 | grep /dev/sd); do
+         tune2fs -m 0 $disk
+     done
+  args:
+    executable: /bin/bash

@@ -1,12 +1,14 @@
 ---
 
+- include_vars: "{{ inventory_dir }}/group_vars/db_server.yml"
+
 - name: Create databases
   mysql_db: login_user=root login_password={{ mysql_root_password }}
-              name={{ item.value.name }} state=present
+              name={{ item.value.name }} state=present encoding=utf8 config_file=/etc/my.cnf login_unix_socket={{ mysql_socket }}
   with_dict: "{{ databases }}"
 
 - name: Create database users
   mysql_user: login_user=root login_password={{ mysql_root_password }}
                 name={{ item.value.user }} password={{ item.value.pass }} update_password=always
-                priv={{ item.value.name }}.*:ALL host='%' state=present
+                priv={{ item.value.name }}.*:ALL host='%' config_file=/etc/my.cnf login_unix_socket={{ mysql_socket }} state=present
   with_dict: "{{ databases }}"
