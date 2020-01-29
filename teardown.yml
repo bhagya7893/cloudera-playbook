@@ -44,7 +44,7 @@
     - include_vars: "{{ inventory_dir }}/group_vars/db_server.yml"
   roles:
     - { role: db_teardown_mysql_cdh, when: database_type == 'mysql' }
-    - { role: db_teardown_postgres_cdh, when: database_type == 'postgres' }
+    #- { role: db_teardown_postgres_cdh, when: database_type == 'postgres' }
     - { role: db_teardown_oracle_cdh, when: database_type == 'oracle' }
   tags: db_teardown_cdh
 
@@ -70,11 +70,11 @@
   hosts: db_server
   tasks:
     - { include_vars: "{{ inventory_dir }}/group_vars/db_server_mysql.yml", when: database_type == 'mysql' }
-    - { include_vars: "{{ inventory_dir }}/group_vars/db_server_postgres.yml", when: database_type == 'postgres' }
+    #- { include_vars: "{{ inventory_dir }}/group_vars/db_server_postgres.yml", when: database_type == 'postgres' }
     - { include_vars: "{{ inventory_dir }}/group_vars/db_server_oracle.yml", when: database_type == 'oracle' }
   roles:
     - { role: db_teardown_mysql_cm, when: database_type == 'mysql' }
-    - { role: db_teardown_postgres_cm, when: database_type == 'postgres' }
+    #- { role: db_teardown_postgres_cm, when: database_type == 'postgres' }
     - { role: db_teardown_oracle_cm, when: database_type == 'oracle' }
   tags: db_teardown_cm
 

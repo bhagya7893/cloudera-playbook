@@ -116,6 +116,9 @@
 
 - name: Set SELINUX to permissive - setenforce
   shell: "setenforce 0"
+  register: disable_selinux
+  ignore_errors: True
+  when: ansible_os_family == 'RedHat'
 
 #- name: Verify required SSSD packages have been yum installed
 #  yum:

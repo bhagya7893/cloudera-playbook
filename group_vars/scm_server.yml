@@ -1,6 +1,6 @@
 ---
 
-scm_version: 6.3.0
+scm_version: 6.3.x
 scm_port: 7180
 scm_port_tls: 7183
 scm_hostname: "{{ hostvars[groups['scm_server'][0]]['inventory_hostname'] }}"
@@ -9,13 +9,15 @@ scm_web_tls: True
 banner_text: "Ansible Cluster Build"
 banner_colour: RED
 
-yum_repo_base: http://<host>/RPMS/
+yum_repo_base: http://cloudera-build-3-us-west-2.vpc.cloudera.com/s3/build/1712953/cm6/6.3.x
 
 scm_repositories:
-  - http://<host>/PARCELS/CDH6.2/ 
-  - http://<host>/PARCELS/KTS/6.1.0/
-  - http://<host>/PARCELS/KMS/6.1.0/
-  - http://<host>/PARCELS/ANACONDA/4.4.1/
+  - http://cloudera-build-3-us-west-2.vpc.cloudera.com/s3/build/1746013/cdh6/6.3.x/parcels/
+  - http://tristan-ansible-1.vpc.cloudera.com/parcels/keytrustee-kms-6.1.0-parcels/6.1.0/parcels/
+  - http://tristan-ansible-1.vpc.cloudera.com/parcels/keytrustee-server-6.1.0-parcels/6.1.0/parcels/
+#  - http://<host>/PARCELS/KTS/6.1.0/
+#  - http://<host>/PARCELS/KMS/6.1.0/
+#  - http://<host>/PARCELS/ANACONDA/4.4.1/
 #  - http://<host>/PARCELS/Oracle/134/
 
 scm_csd:
@@ -24,32 +26,29 @@ scm_csd:
 
 scm_products:
   - product: CDH
-    version: 6.2.0-1.cdh6.2.0.p0.967373
+    version: 6.3.x-1.cdh6.3.x.p0.1746013
 
  # - product: KAFKA
  #   version: 4.0.0-1.4.0.0.p0.1
   
-  - product: KEYTRUSTEE
-    version: 6.1.0-1.KEYTRUSTEE6.1.0.p0.592714
+ # - product: KEYTRUSTEE
+ #   version: 6.1.0-1.KEYTRUSTEE6.1.0.p0.592714
 
 #  - product: ORACLE_INSTANT_CLIENT
 #    version: 11.2-1.oracleinstantclient1.0.0.p0.134
 
-  - product: KEYTRUSTEE
-    version: 6.1.0-1.KEYTRUSTEE6.1.0.p0.592714
+ # - product: KEYTRUSTEE
+ #   version: 6.1.0.p0.592714
 
 kts_products:
   - product: KEYTRUSTEE_SERVER
     version: 6.1.0-1.keytrustee6.1.0.p0.592761
 
-  - product: CDH
-    version: 6.2.0-1.cdh6.2.0.p0.967373
-
-oom_heap_dump_dir: /logs/heapdumps
-eventserver_index_dir: /logs/cloudera-scm-eventserver
-hmon_firehose_storage_dir: /logs/cloudera-host-monitor
-navms_data_dir: /logs/cloudera-scm-navigator
-headlamp_scratch_dir: /logs/cloudera-scm-headlamp
-smon_firehose_storage_dir: /logs/cloudera-service-monitor
+oom_heap_dump_dir: /var/log/heapdumps
+eventserver_index_dir: /var/log/cloudera-scm-eventserver
+hmon_firehose_storage_dir: /var/log/cloudera-host-monitor
+navms_data_dir: /var/log/cloudera-scm-navigator
+headlamp_scratch_dir: /var/log/cloudera-scm-headlamp
+smon_firehose_storage_dir: /var/log/cloudera-service-monitor
 nav_auditstream_filename_pattern: /var/log/cloudera-audit/audit_%d{yyyyMMdd}.evt
 nav_auditstream_directory: /var/log/cloudera-audit

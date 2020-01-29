@@ -29,13 +29,14 @@
   hosts: db_server
   roles:
     - { role: mariadb, when: database_type == 'mysql' }
-    - { role: postgres, when: database_type == 'postgres' }
+#    - { role: postgres, when: database_type == 'postgres' }
   tags: mysql
 
 - name: Install DB Connectors
   hosts: cdh_servers
   roles:
     - db_connector
+    - mysql_connector
   tags: [db_connector, pre_build]
 
 - name: Install MIT KDC Server
@@ -44,11 +45,23 @@
     - { role: krb5_server, when: krb5_kdc_type == 'mit' }
   tags: [krb5, pre_build]
 
+- name: Configure CA
+  hosts: ca_server
+  roles:
+    - ca_server
+  tags: ca_server
+
 - name: Setup certificates
   hosts: all
   roles:
     - certs
   tags: certs
+
+- name: Sign Certs
+  hosts: ca_server
+  roles:
+    - ca_server_signing
+  tags: ca_server_signing
 
 - name: Install certificates
   hosts: all
@@ -88,11 +101,11 @@
     - scm
   tags: [cm_cluster_template, cm_install]
 
-- name: Map Cloudera Manager Roles to LDAP groups
-  hosts: scm_server
-  roles:
-    - cm_roles
-  tags: [cm_roles, cm_install]
+#- name: Map Cloudera Manager Roles to LDAP groups
+#  hosts: scm_server
+#  roles:
+#    - cm_roles
+#  tags: [cm_roles, cm_install]
 
 - name: Install Cloudera Manager Agents - tls
   hosts: cdh_servers:kts_servers:kms_servers

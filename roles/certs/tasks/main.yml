@@ -194,8 +194,7 @@
     path: "{{ signed_certificates_local_location }}"
 
 - name: Copy cacerts to jssecacerts
-  local_action: shell cp {{ cacerts_file }} {{ jssecacerts_local_location }}
-  sudo: yes
+  local_action: "shell cp {{ cacerts_file }} {{ jssecacerts_local_location }}"
   run_once: true
   args:
     creates: "{{ jssecacerts_local_location }}"

@@ -128,9 +128,6 @@
           "name" : "oom_heap_dump_enabled",
           "value" : "false"
         }, {
-          "name" : "dfs_datanode_max_locked_memory",
-          "value" : "2610954240"
-        }, {
           "name" : "datanode_log_dir",
           "value" : "{{ log_base }}/hadoop-hdfs"
         }, {
@@ -138,10 +135,17 @@
           "value" : "700"
         }, {
           "name" : "dfs_datanode_failed_volumes_tolerated",
-          "value" : "3"
+          "value" : "{{ (((cdh_services | json_query('[?type==`hdfs`].dfs_data_dir_list') | first).split(',') | count ) / 2 ) | int }}"
+        {% if (cdh_services | json_query('[?type==`hdfs`].datanode_max_locked_memory') | length > 0 )  %}
+        }, {
+          "name" : "dfs_datanode_max_locked_memory",
+          "variable" : "DATANODE_MAX_LOCKED_MEMORY"
+        {% endif %}
+        {% if (cdh_services | json_query('[?type==`hdfs`].datanode_java_heapsize') | length > 0 )  %}
         }, {
           "name" : "datanode_java_heapsize",
-          "value" : "2147483648"
+          "variable" : "DATANODE_JAVA_HEAPSIZE"
+        {% endif %}
         }
       ],
       "base": true
@@ -180,9 +184,11 @@
         }, {
           "name" : "dfs_namenode_handler_count",
           "value" : "63"
+        {% if (cdh_services | json_query('[?type==`hdfs`].namenode_java_heapsize') | length > 0 )  %}
         }, {
           "name" : "namenode_java_heapsize",
-          "value" : "21474836480"
+          "variable" : "NAMENODE_JAVA_HEAPSIZE"
+        {% endif %}
         }, {
           "name" : "fs_trash_interval",
           "value" : "5760"
@@ -205,9 +211,11 @@
         }, {
           "name" : "journalnode_log_dir",
           "value" : "{{ log_base }}/hadoop-hdfs"
+        {% if (cdh_services | json_query('[?type==`hdfs`].jn_java_heapsize') | length > 0 )  %}
         }, {
-          "name" : "journalNode_java_heapsize",
-          "value" : "268435456"
+          "name" : "journalNode_java_heapsiz",
+          "variable" : "JN_JAVA_HEAPSIZE"
+        {% endif %}
         }
       ],
       "base": true

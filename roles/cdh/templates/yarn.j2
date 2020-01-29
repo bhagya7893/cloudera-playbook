@@ -88,15 +88,19 @@
         }, {
           "name" : "node_manager_log_dir",
           "value" : "{{ log_base }}/hadoop-yarn"
+        {% if (cdh_services | json_query('[?type==`yarn`].yarn_nodemanager_resource_memory_mb') | length > 0 )  %}
         }, {
-        "name" : "yarn_nodemanager_resource_memory_mb",
-        "value" : "40960"
-      }, {
+          "name" : "yarn_nodemanager_resource_memory_mb",
+          "variable" : "YARN_NODEMANAGER_RESOURCE_MEMORY_MB"
+        {% endif %}
+        {% if (cdh_services | json_query('[?type==`yarn`].yarn_nodemanager_resource_cpu_vcores') | length > 0 )  %}
+        }, {
+          "name" : "yarn_nodemanager_resource_cpu_vcores",
+          "variable" : "YARN_NODEMANAGER_RESOURCE_CPU_VCORES"
+        {% endif %}
+        }, {
         "name" : "yarn_nodemanager_heartbeat_interval_ms",
         "value" : "240"
-      }, {
-        "name" : "yarn_nodemanager_resource_cpu_vcores",
-        "value" : "24"
       }, {
         "name" : "oom_heap_dump_enabled",
         "value" : "false"
@@ -109,15 +113,24 @@
       "configs": [ {
         "name" : "resource_manager_log_dir",
         "value" : "{{ log_base }}/hadoop-yarn"
+      {% if (cdh_services | json_query('[?type==`yarn`].yarn_scheduler_maximum_allocation_vcores') | length > 0 )  %}
       }, {
         "name" : "yarn_scheduler_maximum_allocation_vcores",
-        "value" : "24"
+        "variable" : "YARN_SCHEDULER_MAXIMUM_ALLOCATION_VCORES"
+      {% endif %}
+      {% if (cdh_services | json_query('[?type==`yarn`].yarn_scheduler_maximum_allocation_mb') | length > 0 )  %}
+      }, {
+        "name" : "yarn_scheduler_maximum_allocation_mb",
+        "variable" : "YARN_SCHEDULER_MAXIMUM_ALLOCATION_MB"
+      {% endif %}
+      {% if (cdh_services | json_query('[?type==`yarn`].resource_manager_java_heapsize') | length > 0 )  %}
+      }, {
+        "name" : "resource_manager_java_heapsize",
+        "variable" : "RESOURCE_MANAGER_JAVA_HEAPSIZE"
+      {% endif %}
       }, {
         "name" : "resourcemanager_fair_scheduler_preemption",
         "value" : "true"
-      }, {
-        "name" : "yarn_scheduler_maximum_allocation_mb",
-        "value" : "32768"
       }, {
         "name" : "oom_heap_dump_enabled",
         "value" : "false"
@@ -127,9 +140,6 @@
       }, {
         "name" : "resourcemanager_fair_scheduler_assign_multiple",
         "value" : "false"
-      }, {
-        "name" : "resource_manager_java_heapsize",
-        "value" : "4294967296"
       } ],
       "base": true
     }

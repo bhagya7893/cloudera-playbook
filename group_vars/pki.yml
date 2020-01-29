@@ -1,0 +1,11 @@
+---
+
+security_root: "/opt/cloudera/security"
+keystore_name: "server.jks"
+root_ca_alias: RootCA
+intermediate_ca_alias: IntermediateCA
+keystore_password: password
+cacerts_file: /etc/pki/ca-trust/extracted/java/cacerts
+jssecacerts_file: /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.232.b09-0.el7_7.x86_64/jre/lib/security/jssecacerts
+jssecacerts_pw: password
+keytool_path: keytool

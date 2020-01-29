@@ -5,7 +5,7 @@
   yum_repository:
     name: cloudera-manager
     description: Cloudera Manager
-    baseurl: "{{ yum_repo_base }}/el{{ ansible_distribution_major_version }}/"
+    baseurl: "{{ yum_repo_base }}/redhat{{ ansible_distribution_major_version }}/yum"
     gpgcheck: no
     enabled: yes
   when: (ansible_distribution|lower == "redhat") or (ansible_distribution|lower == "centos")

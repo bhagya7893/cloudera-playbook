@@ -3,9 +3,9 @@
 - include_vars: "{{ inventory_dir }}/group_vars/scm_server_enc.yml"
 - include_vars: "{{ inventory_dir }}/group_vars/scm_server.yml"
 
-- name: Copy cm_api to Python lib directory
+- name: Copy license file to scm_server
   copy:
-    src: cloudera_license.txt
+    src: "{{ hostvars[scm_hostname]['license_file'] }}"
     dest: "{{ hostvars[scm_hostname]['license_file'] }}"
     owner: cloudera-scm
     group: cloudera-scm

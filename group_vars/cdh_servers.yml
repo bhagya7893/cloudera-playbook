@@ -8,23 +8,25 @@ cluster_display_name: Cluster1
 
 cdh_tls: true
 log_base: /var/log
+trusted_realm: EXAMPLE.COM
 
 cdh_services:
 
   - type: hdfs
     nameservice: nameservice1
-    dfs_data_dir_list: /data/1/dfs/dn,/data/2/dfs/dn,/data/3/dfs/dn,/data/4/dfs/dn,/data/5/dfs/dn,/data/6/dfs/dn,/data/7/dfs/dn,/data/8/dfs/dn
+    dfs_data_dir_list: /data/1/dfs/dn
     fs_checkpoint_dir_list: /data/1/dfs/snn
     dfs_name_dir_list: /data/1/dfs/nn
     dfs_journalnode_edits_dir: /data/2/dfs/jn
-    hdfs_supergroup: group_np_hdfs_super
+    hdfs_supergroup: hdfs
+    sentry_sync_path_prefixes: /user/hive/warehouse
 
 #  - type: cdsw
 
   - type: hive
 
   - type: hbase
-    hbase_superuser: "@group_np_hdfs_super"
+    hbase_superuser: "@hbase"
 
   - type: hue
     hue_timezone: Europe/London
@@ -33,10 +35,10 @@ cdh_services:
     secure_content_security_policy: "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.google-analytics.com *.doubleclick.net *.mathjax.org data:;img-src 'self' *.google-analytics.com *.doubleclick.net *.gstatic.com data:;style-src 'self' 'unsafe-inline';connect-src 'self';child-src 'self' data:;object-src 'none'"
 
   - type: impala
-    impala_scratch_dirs: /data/1/impala/impalad,/data/2/impala/impalad,/data/3/impala/impalad,/data/4/impala/impalad,/data/5/impala/impalad,/data/6/impala/impalad,/data/7/impala/impalad,/data/8/impala/impalad
+    impala_scratch_dirs: /data/1/impala/impalad
 
-  - type: kafka
-    kafka_super_users: kafka
+#  - type: kafka
+#    kafka_super_users: kafka
   
 #  - type: keytrustee
 
@@ -57,12 +59,12 @@ cdh_services:
   - type: spark
   
   - type: yarn
-    yarn_nodemanager_local_dirs: /data/1/yarn/nm,/data/2/yarn/nm,/data/3/yarn/nm,/data/4/yarn/nm,/data/5/yarn/nm,/data/6/yarn/nm,/data/7/yarn/nm,/data/8/yarn/nm
-    yarn_nodemanager_log_dirs: /data/1/yarn/nm/log,/data/2/yarn/nm/log,/data/3/yarn/nm/log,/data/4/yarn/nm/log,/data/5/yarn/nm/log,/data/6/yarn/nm/log,/data/7/yarn/nm/log,/data/8/yarn/nm/log
+    yarn_nodemanager_local_dirs: /data/1/yarn/nm
+    yarn_nodemanager_log_dirs: /data/1/yarn/nm/log
     CMJOBUSER: user1
-    YARN_ADMIN_ACL: nobody  group_yarn_admin,hue
+    YARN_ADMIN_ACL: nobody  mapred,hue
 
   - type: zookeeper
-    zookeeper_data_log_dir: /data/3/zookeeper
-    zookeeper_edits_dir: /data/4/zookeeper
+    zookeeper_data_log_dir: /data/1/zookeeper
+    zookeeper_edits_dir: /data/1/zookeeper
 

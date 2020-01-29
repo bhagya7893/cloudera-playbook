@@ -1,10 +1,10 @@
 ---
 
-- name: Copy cm_api to Python lib directory
-  copy:
-    src: cm_api-19.0.0-py2.7.egg
-    dest: /usr/lib/python2.7/site-packages/cm_api-19.0.0-py2.7.egg
-    owner: root
-    group: root
-    mode: '0644'
+#- name: Copy cm_api to Python lib directory
+#  copy:
+#    src: /usr/lib/python2.7/site-packages/cm_api-19.0.0-py2.7.egg
+#    dest: /usr/lib/python2.7/site-packages/cm_api-19.0.0-py2.7.egg
+#    owner: root
+#    group: root
+#    mode: '0644'
 

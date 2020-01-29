@@ -38,9 +38,11 @@
       {
         "name" : "log_dir",
         "value" : "{{ log_base }}/spark"
+      {% if (cdh_services | json_query('[?type==`spark`].history_server_max_heapsize') | length > 0 )  %}
       }, {
         "name" : "history_server_max_heapsize",
-        "value" : "3221225472"
+        "variable" : "HISTORY_SERVER_MAX_HEAPSIZE"
+      {% endif %}
       }
       {% if (cdh_tls) %}
       , {

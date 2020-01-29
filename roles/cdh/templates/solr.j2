@@ -62,17 +62,21 @@
       "refName" : "SOLR-1-SOLR_SERVER-BASE",
       "roleType" : "SOLR_SERVER",
       "configs" : [ {
+      {% if (cdh_services | json_query('[?type==`solr`].solr_java_heapsize') | length > 0 )  %}
         "name" : "solr_java_heapsize",
-        "value" : "53687091200"
+        "variable" : "SOLR_JAVA_HEAPSIZE"
       }, {
+      {% endif %}
+      {% if (cdh_services | json_query('[?type==`solr`].solr_java_direct_memory_size') | length > 0 )  %}
+        "name" : "solr_java_direct_memory_size",
+        "variable" : "SOLR_JAVA_DIRECT_MEMORY_SIZE"
+      }, {
+      {% endif %}
         "name" : "solr_log_dir",
         "value" : "{{ log_base }}/solr"
       }, {
         "name" : "log4j_safety_valve",
         "value" : ""
-      }, {
-        "name" : "solr_java_direct_memory_size",
-        "value" : "17179869184"
       }, {
         "name" : "oom_heap_dump_enabled",
         "value" : "false"

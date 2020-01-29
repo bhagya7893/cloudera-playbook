@@ -32,25 +32,26 @@
       "refName": "SPARK2_ON_YARN-1-SPARK2_YARN_HISTORY_SERVER-BASE",
       "roleType": "SPARK2_YARN_HISTORY_SERVER",
       "configs": [ {
-      "name" : "event_log_cleaner_max_age",
-      "value" : "1209600"
-    }, {
-      "name" : "history_server_max_heapsize",
-      "value" : "4294967296"
-    }
-    {% if (cdh_tls) %}
-      {
-        "name" : "ssl_server_keystore_location",
-        "value" : "{{ tls.keystore_path }}"
-      }, {
-        "name" : "ssl_enabled",
-        "value" : "true"
-      }, {
-        "name" : "ssl_server_keystore_password",
-        "value" : "{{ tls.keystore_password }}"
-      }
-
-    {% endif %}
+        "name" : "event_log_cleaner_max_age",
+        "value" : "1209600"
+        {% if (cdh_services | json_query('[?type==`spark2`].history_server_max_heapsize') | length > 0 )  %}
+        }, {
+          "name" : "history_server_max_heapsize",
+          "variable" : "HISTORY_SERVER_MAX_HEAPSIZE"
+        {% endif %}
+        }
+        {% if (cdh_tls) %}
+        , {
+          "name" : "ssl_server_keystore_location",
+          "value" : "{{ tls.keystore_path }}"
+        }, {
+          "name" : "ssl_enabled",
+          "value" : "true"
+        }, {
+          "name" : "ssl_server_keystore_password",
+          "value" : "{{ tls.keystore_password }}"
+        }
+        {% endif %}
       ],
       "base": true
     }

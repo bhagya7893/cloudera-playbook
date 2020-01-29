@@ -25,8 +25,8 @@ ldap_rdom:
   group_name_attr: cn
   group_member_attr: member
   cm_clu_admin: GROUP_CDH_ADMIN
-  cm_full_admin: GROUP_CDH_ADMIN
-  cm_key_admin: GROUP_CDH_ADMIN
-  cm_operator: GROUP_CDH_ADMIN
-  cm_read_only: GROUP_CDH_ADMIN
-  cm_user_admin: GROUP_CDH_ADMIN
+  cm_full_admin: GROUP_CDH_ADMIN2
+  cm_key_admin: GROUP_CDH_ADMIN3
+  cm_operator: GROUP_CDH_ADMIN4
+  cm_read_only: GROUP_CDH_ADMIN5
+  cm_user_admin: GROUP_CDH_ADMIN6

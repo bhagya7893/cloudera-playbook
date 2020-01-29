@@ -2,11 +2,11 @@
 
 tls:
   keystore_path: /opt/cloudera/security/jks/localhost.jks
-  keystore_password: changeme
+  keystore_password: password
   key_password_file: /opt/cloudera/security/x509/key.pw
   tls_cert: /opt/cloudera/security/x509/localhost.pem
   private_key: /opt/cloudera/security/x509/localhost.key
   cert_dir: /opt/cloudera/security/CAcerts/
-  cert_chain: /opt/cloudera/security/CAcerts/root.pem
-  truststore_path: /usr/java/latest/jre/lib/security/jssecacerts
-  truststore_password: changeit
+  cert_chain: /opt/cloudera/security/CAcerts/ca-chain.cert.pem
+  truststore_path: /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.232.b09-0.el7_7.x86_64/jre/lib/security/jssecacerts
+  truststore_password: password

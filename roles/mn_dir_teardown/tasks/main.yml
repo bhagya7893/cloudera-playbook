@@ -22,11 +22,11 @@
 
 - name: ZK Data Dirs
   file:
-    path: "/data/3/zookeeper"
+    path: "/data/1/zookeeper"
     state: absent
 
 
 - name: ZK Edits Dirs
   file:
-    path: "/data/4/zookeeper"
+    path: "/data/1/zookeeper"
     state: absent

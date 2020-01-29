@@ -85,9 +85,11 @@
       }, {
         "name" : "oom_heap_dump_enabled",
         "value" : "false"
+      {% if (cdh_services | json_query('[?type==`hbase`].hbase_regionserver_java_heapsize') | length > 0 )  %}
       }, {
         "name" : "hbase_regionserver_java_heapsize",
-        "value" : "2631925760"
+        "variable" : "HBASE_REGIONSERVER_JAVA_HEAPSIZE"
+      {% endif %}
       } ],
       "base" : true
     }, {

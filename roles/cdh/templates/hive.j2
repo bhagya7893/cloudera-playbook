@@ -110,12 +110,21 @@
       } , {
         "name" : "hiveserver2_load_balancer",
         "value" : "{{ hostvars[groups['haproxy'][0]]['inventory_hostname'] }}:10000"
-      }, {
-        "name" : "hiveserver2_spark_driver_memory",
-        "value" : "966367641"
+      {% if (cdh_services | json_query('[?type==`hive`].hiveserver2_java_heapsize') | length > 0 )  %}
       }, {
         "name" : "hiveserver2_java_heapsize",
-        "value" : "8589934592"
+        "variable" : "HIVESERVER2_JAVA_HEAPSIZE"
+      {% endif %}
+      {% if (cdh_services | json_query('[?type==`hive`].hiveserver2_spark_executor_memory') | length > 0 )  %}
+      }, {
+        "name" : "hiveserver2_spark_executor_memory",
+        "variable" : "HIVESERVER2_SPARK_EXECUTOR_MEMORY"
+      {% endif %}
+      {% if (cdh_services | json_query('[?type==`hive`].hiveserver2_spark_driver_memory') | length > 0 )  %}
+      }, {
+        "name" : "hiveserver2_spark_driver_memory",
+        "variable" : "HIVESERVER2_SPARK_DRIVER_MEMORY"
+      {% endif %}
       }, {
         "name" : "hiveserver2_enable_impersonation",
         "value" : "false"
@@ -131,9 +140,6 @@
       }, {
         "name" : "hiveserver2_spark_yarn_driver_memory_overhead",
         "value" : "102"
-      }, {
-        "name" : "hiveserver2_spark_executor_memory",
-        "value" : "1016007228"
       } ],
       "base": true
     }

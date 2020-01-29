@@ -120,6 +120,13 @@ dns_resolution_collection_timeout_seconds=30
 # Use TLS and certificate validation when connecting to the CM server.
 use_tls=0
 
+# Minimum TLS or SSL protocol.
+# Allowed values: SSLv2, SSLv3, TLSv1.0, TLSv1.1, TLSv1.2
+minimum_tls_protocol=TLSv1.2
+
+# List of allowed ciphers for TLS
+cipher_list=HIGH:!DSS:!DH:!ADH:!DES:!3DES:!SHA1:!aNULL:!eNULL:!EXPORT:!SSLv2:!SSLv3:!TLSv1
+
 # The maximum allowed depth of the certificate chain returned by the peer.
 # The default value of 9 matches the default specified in openssl's
 # SSL_CTX_set_verify.

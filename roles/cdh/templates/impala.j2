@@ -63,9 +63,11 @@
       }, {
         "name" : "default_query_options",
         "value" : "query_timeout_s=0"
+      {% if (cdh_services | json_query('[?type==`impala`].impalad_memory_limit') | length > 0 )  %}
       }, {
         "name" : "impalad_memory_limit",
-        "value" : "75161927680"
+        "variable" : "IMPALAD_MEMORY_LIMIT"
+      {% endif %}
       }, {
         "name" : "enable_audit_event_log",
         "value" : "true"

@@ -7,8 +7,20 @@ krb5_realm: MIT.EXAMPLE.COM
 ad_domain: "{{ krb5_realm.lower() }}"
 computer_ou: OU=computer_hosts,OU=hadoop_prd,DC=ad,DC=sec,DC=example,DC=com 
 domain: MIT.EXAMPLE.COM
-kdc: mit.example.com
-admin_server: w2k8-1.ad.sec.cloudera.com
+kdc: tristan-ansible-1.vpc.cloudera.com
+admin_server: tristan-ansible-1.vpc.cloudera.com
 enc_types: rc4-hmac DES-CBC-MD5 DES-CBC-CRC
 ad_account_prefix: prefix_
-kdc_account_creation_host_override: w2k8-1.ad.sec.cloudera.com
+kdc_account_creation_host_override: tristan-ansible-1.vpc.cloudera.com
+
+## ------------------------------------------------------------------------------------------------------------
+## Java installation options
+## ------------------------------------------------------------------------------------------------------------
+
+java_installation_strategy: package       # can be set to 'none', 'package' or 'rpm'
+
+java_package: java-1.8.0-openjdk-devel
+java_rpm_location: /tmp/jdk-8u181-linux-x64.rpm
+java_rpm_remote_src: no
+java_jce_location: /tmp/jce_policy-8.zip
+java_jce_remote_src: no
