@@ -7,11 +7,13 @@
 - include_vars: "{{ inventory_dir }}/group_vars/tls_enc.yml"
 
 - name: Install the Cloudera Manager Server Packages
-  yum: name={{ item }} state=installed
-  with_items:
-    - "cloudera-manager-daemons-{{ scm_version }}"
-    - "cloudera-manager-server-{{ scm_version }}"
-    - "cloudera-manager-agent-{{ scm_version }}"
+  yum:
+    name:
+    - cloudera-manager-daemons
+    - cloudera-manager-server
+    - cloudera-manager-agent
+    - openldap-clients
+    state: installed
 
 #To Do
 #Change scm_dir to use if statement - previously /usr/share/cmf/
