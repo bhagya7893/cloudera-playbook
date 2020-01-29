@@ -8,5 +8,5 @@ tls:
   private_key: /opt/cloudera/security/x509/localhost.key
   cert_dir: /opt/cloudera/security/CAcerts/
   cert_chain: /opt/cloudera/security/CAcerts/ca-chain.cert.pem
-  truststore_path: /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.232.b09-0.el7_7.x86_64/jre/lib/security/jssecacerts
+  truststore_path: /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.242.b08-0.el7_7.x86_64/jre/lib/security/jssecacerts
   truststore_password: password

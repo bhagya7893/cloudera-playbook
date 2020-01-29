@@ -13,8 +13,8 @@ yum_repo_base: http://cloudera-build-3-us-west-2.vpc.cloudera.com/s3/build/17129
 
 scm_repositories:
   - http://cloudera-build-3-us-west-2.vpc.cloudera.com/s3/build/1746013/cdh6/6.3.x/parcels/
-  - http://tristan-ansible-1.vpc.cloudera.com/parcels/keytrustee-kms-6.1.0-parcels/6.1.0/parcels/
-  - http://tristan-ansible-1.vpc.cloudera.com/parcels/keytrustee-server-6.1.0-parcels/6.1.0/parcels/
+  - http://tristan2-1.vpc.cloudera.com/parcels/keytrustee-kms-6.1.0-parcels/6.1.0/parcels/
+  - http://tristan2-1.vpc.cloudera.com/parcels/keytrustee-server-6.1.0-parcels/6.1.0/parcels/
 #  - http://<host>/PARCELS/KTS/6.1.0/
 #  - http://<host>/PARCELS/KMS/6.1.0/
 #  - http://<host>/PARCELS/ANACONDA/4.4.1/

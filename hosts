@@ -1,16 +1,16 @@
 # Note for AWS: 'Public DNS' name is too long for ansible_host, use 'Public IP' (https://github.com/ansible/ansible/issues/11536)
 
 [scm_server]
-tristan-ansible-1.vpc.cloudera.com    license_file=/root/tristan_stevens_2019_2020_cloudera_license.txt
+tristan2-1.vpc.cloudera.com    license_file=/root/tristan_stevens_2019_2020_cloudera_license.txt
 
 [db_server]
-tristan-ansible-1.vpc.cloudera.com
+tristan2-1.vpc.cloudera.com
 
 [krb5_server]
-tristan-ansible-1.vpc.cloudera.com    default_realm=MIT.EXAMPLE.COM
+tristan2-1.vpc.cloudera.com    default_realm=MIT.EXAMPLE.COM
 
 [ca_server]
-tristan-ansible-1.vpc.cloudera.com
+tristan2-1.vpc.cloudera.com
 
 [utility_servers:children]
 scm_server
@@ -22,27 +22,28 @@ gatewayen_servers
 gatewaylb_servers
 
 [gatewayen_servers]
-#tristan-ansible-1.vpc.cloudera.com    host_template=HostTemplate-GatewayEdge
+#tristan2-1.vpc.cloudera.com    host_template=HostTemplate-GatewayEdge
 
 [gatewaylb_servers]
-tristan-ansible-4.vpc.cloudera.com    host_template=HostTemplate-GatewayLB
+tristan2-4.vpc.cloudera.com    host_template=HostTemplate-GatewayLB
 
 [master_servers]
-tristan-ansible-1.vpc.cloudera.com    host_template=HostTemplate-Master1
-tristan-ansible-2.vpc.cloudera.com    host_template=HostTemplate-Master2
-tristan-ansible-3.vpc.cloudera.com    host_template=HostTemplate-Master3
+tristan2-1.vpc.cloudera.com    host_template=HostTemplate-Master1
+tristan2-2.vpc.cloudera.com    host_template=HostTemplate-Master2
+tristan2-3.vpc.cloudera.com    host_template=HostTemplate-Master3
 
 [worker_servers]
-tristan-ansible-5.vpc.cloudera.com
-tristan-ansible-6.vpc.cloudera.com
+tristan2-5.vpc.cloudera.com
+tristan2-6.vpc.cloudera.com
+tristan2-7.vpc.cloudera.com
 
 [worker_servers:vars]
 host_template=HostTemplate-Workers
 #host_template=HostTemplate-Kafka
 
 [kms_servers]
-#tristan-ansible-2.vpc.cloudera.com
-#tristan-ansible-3.vpc.cloudera.com
+tristan2-8.vpc.cloudera.com
+tristan2-9.vpc.cloudera.com
 
 [cdh_servers:children]
 utility_servers
@@ -52,16 +53,16 @@ worker_servers
 kms_servers
 
 [kts_servers]
-#tristan-ansible-1.vpc.cloudera.com host_template=KeyTrusteeActive
-#tristan-ansible-1.vpc.cloudera.com host_template=KeyTrusteePassive
+tristan2-10.vpc.cloudera.com host_template=KeyTrusteeActive
+tristan2-11.vpc.cloudera.com host_template=KeyTrusteePassive
 
 [haproxy]
-tristan-ansible-1.vpc.cloudera.com
+tristan2-1.vpc.cloudera.com
 
 [all:vars]
 # 'ad', 'mit', or 'none' to disable security
 # This value must match that in group_vars/krb5_server.yml
 krb5_kdc_type='mit'
-hdfs_tde_enabled='False'
+hdfs_tde_enabled='True'
 database_type='mysql'
 full_teardown='False'

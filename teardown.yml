@@ -17,11 +17,11 @@
     - { role: db_teardown_oracle_cdh, when: database_type == 'oracle' }
   tags: db_teardown_cdh
 
-- name: Remove HAProxy
-  hosts: haproxy
-  roles:
-    - haproxy_teardown
-  tags: haproxy_teardown
+#- name: Remove HAProxy
+#  hosts: haproxy
+#  roles:
+#    - haproxy_teardown
+#  tags: haproxy_teardown
                     
 - name: CM Agent teardown
   hosts: cdh_servers:scm_server:kts_servers:kms_servers
