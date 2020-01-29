@@ -2,43 +2,73 @@
 
 - include_vars: "{{ inventory_dir }}/group_vars/cdh_servers.yml"
 
-#- debug: var=cdh_services
-#- debug: var="{{ cdh_services[0].dfs_data_dir_list }}"
-
-- name: DFS Data Dir Delete
-  shell: rm /data/*/dfs/ -rf
-
+- debug:
+   var=group_names
 
 - name: SNN Dir Delete
   file:
-    path: "{{ cdh_services[0].fs_checkpoint_dir_list }}"
+    path: "{{ cdh_services | json_query('[?type==`hdfs`].fs_checkpoint_dir_list') | first }}"
     state: absent
   ignore_errors: true
+  when: "'master_servers' in group_names"
 
 - name: NN Dir Delete
   file:
-    path: "{{ cdh_services[0].dfs_name_dir_list }}"
+    path: "{{ item }}"
     state: absent
   ignore_errors: true
+  with_items: "{{ cdh_services | json_query('[?type==`hdfs`].dfs_name_dir_list') }}"
+  when: "'master_servers' in group_names"
 
 - name: JN Edits Dir
   file:
-    path: "{{ cdh_services[0].dfs_journalnode_edits_dir }}"
+    path: "{{ cdh_services | json_query('[?type==`hdfs`].dfs_journalnode_edits_dir') | first }}"
     state: absent
   ignore_errors: true
+  when: "'master_servers' in group_names"
 
 - name: ZK Data Dirs
   file:
-    path: "/data/3/zookeeper"
+    path:  "{{ cdh_services | json_query('[?type==`zookeeper`].zookeeper_data_log_dir') | first }}"
     state: absent
+  when: "'master_servers' in group_names"
 
 
 - name: ZK Edits Dirs
   file:
-    path: "/data/4/zookeeper"
+    path:  "{{ cdh_services | json_query('[?type==`zookeeper`].zookeeper_edits_dir') | first }}"
     state: absent
+  when: "'master_servers' in group_names"
+
+- name: DFS Data Dir Delete
+  file:
+    path: "{{ item }}"
+    state: absent
+  ignore_errors: true
+  with_items: "{{ cdh_services | json_query('[?type==`hdfs`].dfs_data_dir_list') }}"
+  when: "'worker_servers' in group_names"
 
 - name: Kafka Dir
   file:
     path: "/var/local/kafka/data"
     state: absent
+  when: "'kafka_brokers' in group_names"
+
+- name: KMS Data Dir
+  file:
+    path: "{{ kms_conf_dir }}"
+    state: absent
+  when: "'kms_servers' in group_names"
+
+- name: KMS Key Dir
+  file:
+    path: "{{ kms_key_dir }}"
+    state: absent
+  when: "'kms_servers' in group_names"
+
+- name: KTS Data Dir
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items: "{{ kts_services[0] }}"
+  when: "'kts_servers' in group_names"

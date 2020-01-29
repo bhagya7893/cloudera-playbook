@@ -1,42 +1,11 @@
 ---
 # Cloudera playbook teardown
 
-
-#- name: CDH Teardown
-#  hosts: scm_server
-#  roles:
-#    - cdh_teardown
-#  tags: cdh_teardown
-
-- name: Datanode Dir teardown
-  hosts: cdh_servers
+- name: Dir teardown
+  hosts: all
   roles:
-    - dn_dir_teardown
-  tags: dn_dir_teardown
-
-- name: Masternode Dir teardown
-  hosts: master_servers
-  roles:
-    - mn_dir_teardown
-  tags: mn_dir_teardown
-
-- name: Kafka Dir teardown
-  hosts: cdh_servers
-  roles:
-    - kafka_dir_teardown
-  tags: kafka_dir_teardown
-
-- name: KTS Dir teardown
-  hosts: kts_servers
-  roles:
-    - kts_dir_teardown
-  tags: kts_dir_teardown
-
-- name: KMS Dir teardown
-  hosts: kms_servers
-  roles:
-    - kms_dir_teardown
-  tags: kms_dir_teardown
+    - dir_teardown
+  tags: dir_teardown
 
 - name: CDH DB teardown
   hosts: scm_server

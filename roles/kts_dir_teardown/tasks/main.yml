@@ -1,4 +1,0 @@
-- name: KTS Data Dir
-  file:
-    path: "/var/opt/cloudera/keytrustee"
-    state: absent
