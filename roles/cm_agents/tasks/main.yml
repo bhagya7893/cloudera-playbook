@@ -2,8 +2,6 @@
 
 - include_vars: "{{ inventory_dir }}/group_vars/scm_server.yml"
 
-- include: 36322.yml
-
 - name: Install Cloudera Manager Agents
   yum:
     name:

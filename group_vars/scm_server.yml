@@ -13,8 +13,8 @@ yum_repo_base: http://cloudera-build-3-us-west-2.vpc.cloudera.com/s3/build/17129
 
 scm_repositories:
   - http://cloudera-build-3-us-west-2.vpc.cloudera.com/s3/build/1746013/cdh6/6.3.x/parcels/
-  - http://tristan2-1.vpc.cloudera.com/parcels/keytrustee-kms-6.1.0-parcels/6.1.0/parcels/
-  - http://tristan2-1.vpc.cloudera.com/parcels/keytrustee-server-6.1.0-parcels/6.1.0/parcels/
+  - http://tristan3-1.vpc.cloudera.com/parcels/keytrustee-kms-6.1.0-parcels/6.1.0/parcels/
+  - http://tristan3-1.vpc.cloudera.com/parcels/keytrustee-server-6.1.0-parcels/6.1.0/parcels/
 #  - http://<host>/PARCELS/KTS/6.1.0/
 #  - http://<host>/PARCELS/KMS/6.1.0/
 #  - http://<host>/PARCELS/ANACONDA/4.4.1/
@@ -31,8 +31,8 @@ scm_products:
  # - product: KAFKA
  #   version: 4.0.0-1.4.0.0.p0.1
   
- # - product: KEYTRUSTEE
- #   version: 6.1.0-1.KEYTRUSTEE6.1.0.p0.592714
+  - product: KEYTRUSTEE
+    version: 6.1.0-1.KEYTRUSTEE6.1.0.p0.592714
 
 #  - product: ORACLE_INSTANT_CLIENT
 #    version: 11.2-1.oracleinstantclient1.0.0.p0.134
@@ -43,6 +43,9 @@ scm_products:
 kts_products:
   - product: KEYTRUSTEE_SERVER
     version: 6.1.0-1.keytrustee6.1.0.p0.592761
+
+  - product: CDH
+    version: 6.3.x-1.cdh6.3.x.p0.1746013
 
 oom_heap_dump_dir: /var/log/heapdumps
 eventserver_index_dir: /var/log/cloudera-scm-eventserver

@@ -1,6 +1,8 @@
 ---
 - include_vars: "{{ inventory_dir }}/group_vars/cdh_servers.yml"
 - include_vars: "{{ inventory_dir }}/group_vars/tls_enc.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/pki.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/ca.yml"
 
 - name: Install HAProxy
   yum: name=haproxy state=latest
@@ -13,7 +15,10 @@
   with_items: "{{ groups['haproxy'] }}"
 
 - name: Create combined key and pem
-  shell: "cat /opt/cloudera/security/x509/localhost.pem /opt/cloudera/security/x509/localhost.key | sed -ne '/-BEGIN/,/-END/p' > /etc/haproxy/combinedKeyAndCert.pem"
+  shell: "cat {{ tls.tls_cert }} > /etc/haproxy/combinedKeyAndCert.pem"
+
+- name: Create combined key and pem
+  shell: "{{ openssl_path }} rsa -in {{ tls.private_key }} -passin pass:{{ keystore_password }}  >> /etc/haproxy/combinedKeyAndCert.pem"
 
 - name: Set combined key and pem permissions
   file:

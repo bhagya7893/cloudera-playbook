@@ -1,6 +1,14 @@
 {
   "cdhVersion" : "{{ cdh_version }}",
   "displayName" : "{{ cluster_display_name }}",
+  "repositories" : [ 
+    {% for repo in scm_repositories %}
+      "{{ repo }}"
+      {% if not loop.last %}
+      ,
+      {% endif %}
+    {% endfor %}
+  ],
   "cmVersion" : "{{ scm_version }}",
   "products" : [
     {% set prod_j = joiner(",") %}

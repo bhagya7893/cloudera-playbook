@@ -1,4 +1,7 @@
 - include_vars: "{{ inventory_dir }}/group_vars/tls_enc.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/kms_servers.yml"
+
+- include: 36322.yml
 
 - name: change swappiness value
   sysctl:
@@ -135,13 +138,12 @@
 
 - name: Yum Install required KRB5 packages 
   yum: 
-    name: "{{ item }}"
+    name: 
+      - krb5-workstation
+      - krb5-libs
+      - openldap
+      - openldap-clients
     state: present
-  with_items:
-    - krb5-workstation
-    - krb5-libs
-    - openldap
-    - openldap-clients
 
 - name: Deploy KRB5 config
   template:
@@ -197,3 +199,15 @@
      done
   args:
     executable: /bin/bash
+
+- name: Create KMS Directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: kms
+    group: kms
+    mode: '0700' 
+  with_items:
+    - "{{ kms_key_dir }}"
+    - "{{ kms_conf_dir }}"
+  when: "'kms_servers' in group_names"

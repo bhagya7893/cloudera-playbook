@@ -291,9 +291,12 @@
   run_once: true
   register: hdfs_resp
 
+- set_fact:
+    cdh_version: "{{ scm_products | json_query('[?product==`CDH`].version') | first }}"
+
 - name: Check CDH parcel is activated on all hosts
   uri:
-    url: "{{ cm_api_url }}/clusters/{{ cluster_display_name }}/parcels/products/CDH/versions/6.2.0-1.cdh6.2.0.p0.967373/"
+    url: "{{ cm_api_url }}/clusters/{{ cluster_display_name }}/parcels/products/CDH/versions/{{ cdh_version }}/"
     method: GET
     status_code: 200,404
     force_basic_auth: yes
@@ -306,9 +309,12 @@
   delay: 30
   run_once: true
 
+- set_fact:
+    kms_version: "{{ scm_products | json_query('[?product==`KEYTRUSTEE`].version') | first }}"
+
 - name: Check KEYTRUSTEE parcel is activated on all hosts
   uri:
-    url: "{{ cm_api_url }}/clusters/{{ cluster_display_name }}/parcels/products/KEYTRUSTEE/versions/6.1.0-1.KEYTRUSTEE6.1.0.p0.592714/"
+    url: "{{ cm_api_url }}/clusters/{{ cluster_display_name }}/parcels/products/KEYTRUSTEE/versions/{{ kms_version }}/"
     method: GET
     status_code: 200,404
     force_basic_auth: yes

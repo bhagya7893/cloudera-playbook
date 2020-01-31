@@ -69,7 +69,7 @@
 - set_fact: cm_api_url="http://{{ hostvars[scm_hostname]['inventory_hostname'] }}:{{ scm_port }}/api/{{ result.content }}"
 
 # Install Cloudera Manager Python API
-# - include: api.yml
+- include: api.yml
 
 # Retrieve auto-generated host IDs from SCM
 - name: Get SCM hostIds for inventory hosts
@@ -78,8 +78,6 @@
   register: scm_hosts_result
   vars:
     use_tls: False
-# environment:
-#   PYTHONPATH: "{{ ansible_env.PYTHONPATH }}:/usr/lib/python2.7/site-packages/cm_api-19.0.0-py2.7.egg"
 
 - set_fact: scm_host_ids="{{ scm_hosts_result.host_ids }}"
 

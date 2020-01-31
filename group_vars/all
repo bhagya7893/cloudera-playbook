@@ -7,11 +7,11 @@ krb5_realm: MIT.EXAMPLE.COM
 ad_domain: "{{ krb5_realm.lower() }}"
 computer_ou: OU=computer_hosts,OU=hadoop_prd,DC=ad,DC=sec,DC=example,DC=com 
 domain: MIT.EXAMPLE.COM
-kdc: tristan2-1.vpc.cloudera.com
-admin_server: tristan2-1.vpc.cloudera.com
+kdc: tristan3-1.vpc.cloudera.com
+admin_server: tristan3-1.vpc.cloudera.com
 enc_types: rc4-hmac DES-CBC-MD5 DES-CBC-CRC
 ad_account_prefix: prefix_
-kdc_account_creation_host_override: tristan2-1.vpc.cloudera.com
+kdc_account_creation_host_override: tristan3-1.vpc.cloudera.com
 
 ## ------------------------------------------------------------------------------------------------------------
 ## Java installation options

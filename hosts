@@ -1,16 +1,16 @@
 # Note for AWS: 'Public DNS' name is too long for ansible_host, use 'Public IP' (https://github.com/ansible/ansible/issues/11536)
 
 [scm_server]
-tristan2-1.vpc.cloudera.com    license_file=/root/tristan_stevens_2019_2020_cloudera_license.txt
+tristan3-1.vpc.cloudera.com    license_file=/root/tristan_stevens_2019_2020_cloudera_license.txt
 
 [db_server]
-tristan2-1.vpc.cloudera.com
+tristan3-1.vpc.cloudera.com
 
 [krb5_server]
-tristan2-1.vpc.cloudera.com    default_realm=MIT.EXAMPLE.COM
+tristan3-1.vpc.cloudera.com    default_realm=MIT.EXAMPLE.COM
 
 [ca_server]
-tristan2-1.vpc.cloudera.com
+tristan3-1.vpc.cloudera.com
 
 [utility_servers:children]
 scm_server
@@ -22,28 +22,28 @@ gatewayen_servers
 gatewaylb_servers
 
 [gatewayen_servers]
-#tristan2-1.vpc.cloudera.com    host_template=HostTemplate-GatewayEdge
+#tristan3-1.vpc.cloudera.com    host_template=HostTemplate-GatewayEdge
 
 [gatewaylb_servers]
-tristan2-4.vpc.cloudera.com    host_template=HostTemplate-GatewayLB
+tristan3-4.vpc.cloudera.com    host_template=HostTemplate-GatewayLB
 
 [master_servers]
-tristan2-1.vpc.cloudera.com    host_template=HostTemplate-Master1
-tristan2-2.vpc.cloudera.com    host_template=HostTemplate-Master2
-tristan2-3.vpc.cloudera.com    host_template=HostTemplate-Master3
+tristan3-1.vpc.cloudera.com    host_template=HostTemplate-Master1
+tristan3-2.vpc.cloudera.com    host_template=HostTemplate-Master2
+tristan3-3.vpc.cloudera.com    host_template=HostTemplate-Master3
 
 [worker_servers]
-tristan2-5.vpc.cloudera.com
-tristan2-6.vpc.cloudera.com
-tristan2-7.vpc.cloudera.com
+tristan3-5.vpc.cloudera.com
+tristan3-6.vpc.cloudera.com
+tristan3-7.vpc.cloudera.com
 
 [worker_servers:vars]
 host_template=HostTemplate-Workers
 #host_template=HostTemplate-Kafka
 
 [kms_servers]
-tristan2-8.vpc.cloudera.com
-tristan2-9.vpc.cloudera.com
+tristan3-8.vpc.cloudera.com
+tristan3-9.vpc.cloudera.com
 
 [cdh_servers:children]
 utility_servers
@@ -53,11 +53,11 @@ worker_servers
 kms_servers
 
 [kts_servers]
-tristan2-10.vpc.cloudera.com host_template=KeyTrusteeActive
-tristan2-11.vpc.cloudera.com host_template=KeyTrusteePassive
+tristan3-10.vpc.cloudera.com host_template=KeyTrusteeActive
+tristan3-11.vpc.cloudera.com host_template=KeyTrusteePassive
 
 [haproxy]
-tristan2-1.vpc.cloudera.com
+tristan3-1.vpc.cloudera.com
 
 [all:vars]
 # 'ad', 'mit', or 'none' to disable security

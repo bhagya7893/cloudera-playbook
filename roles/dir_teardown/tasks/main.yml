@@ -68,7 +68,7 @@
 
 - name: KTS Data Dir
   file:
-    path: "{{ item }}"
+    path: "{{ item.value }}"
     state: absent
-  with_items: "{{ kts_services[0] }}"
+  with_dict: "{{ kts_services[0] }}"
   when: "'kts_servers' in group_names"

@@ -2,25 +2,25 @@
 # Cloudera playbook
 
 - name: Apply pre-reqs fix
-  hosts: cdh_servers:kts_servers:kms_servers
+  hosts: all
   roles:
     - pre_reqs
   tags: [pre_reqs, pre_build]
 
 - name: Configure Cloudera Manager Repository
-  hosts: cdh_servers:kts_servers:kms_servers
+  hosts: all
   roles:
     - cm_repo
   tags: [cm_repo, pre_build]
 
 - name: Install rngd
-  hosts: cdh_servers:kts_servers:kms_servers
+  hosts: all
   roles:
     - rngd
   tags: [rngd, pre_build]
 
 - name: Install Java
-  hosts: cdh_servers:kts_servers:kms_servers
+  hosts: all
   roles:
     - java
   tags: [java, pre_build]
@@ -70,24 +70,10 @@
   tags: certs_signed_install
 
 - name: Install Cloudera Manager Agents
-  hosts: cdh_servers:kts_servers:kms_servers
+  hosts: all
   roles:
     - cm_agents
   tags: cm_agents
-
-# Must be done after the cm_agents role otherwise the local users do not exist
-- name: Create Data Node directories
-  hosts: worker_servers 
-  roles:
-    - dn_dir_creation 
-  tags: dn_dir_creation 
-
-# Must be done after the cm_agents role otherwise the local users do not exist
-- name: Create Master Node Directories
-  hosts: master_servers
-  roles:
-    - nn_dir_creation
-  tags: nn_dir_creation
 
 - name: Install Cloudera Manager Python API
   hosts: scm_server
@@ -108,7 +94,7 @@
 #  tags: [cm_roles, cm_install]
 
 - name: Install Cloudera Manager Agents - tls
-  hosts: cdh_servers:kts_servers:kms_servers
+  hosts: all
   roles:
     - cm_agents_tls
   tags: [cm_agents_tls, cm_install]
@@ -126,6 +112,7 @@
     - { role: kts, when: hdfs_tde_enabled == 'True' }
   tags:
   - kts_cluster_template
+  - kts
 
 - name: Sync KTS keys
   hosts: kts_servers
@@ -133,6 +120,7 @@
     - { role: kts_key_sync, when: hdfs_tde_enabled == 'True' }
   tags:
   - kts_key_sync
+  - kts
 
 - name: Sync KMS keys
   hosts: kms_servers
@@ -140,6 +128,7 @@
     - { role: kms_key_sync, when: hdfs_tde_enabled == 'True' }
   tags:
   - kms_key_sync
+  - kms
 
 - name: Create Encryption Zones
   hosts: master_servers
@@ -147,6 +136,7 @@
     - { role: kms_encryption_zones, when: hdfs_tde_enabled == 'True' }
   tags:
   - enc_zones
+  - kms
 
 - name: Install and Configure HAProxy
   hosts: haproxy

@@ -167,9 +167,11 @@
           }, {
             "name": "oom_heap_dump_enabled",
             "value": "false"
+          {% if (headlamp_heapsize is defined) %}
           }, {
             "name": "headlamp_heapsize",
-            "value": "8589934592"
+            "value": "{{ headlamp_heapsize }}"
+          {% endif %}
           }
         ]
       }
@@ -233,9 +235,11 @@
           }, {
             "name": "oom_heap_dump_enabled",
             "value": "false"
+          {% if (navigator_audit_heapsize is defined) %}
           }, {
             "name": "navigator_heapsize",
-            "value": "10737418240"
+            "value": "{{ navigator_audit_heapsize }}"
+          {% endif %}
           }
         ]
       }
@@ -306,9 +310,11 @@
           }, {
             "name" : "nav_nt_domain",
             "value" : "{{ ldap_rdom.domain }}",
+          {% if (navigator_metastore_heapsize is defined) %}
           }, {
             "name" : "navigator_heapsize",
-            "value" : "34359738368",
+            "value" : "{{ navigator_metastore_heapsize }}",
+          {% endif %}
           }, {
             "name" : "oom_heap_dump_enabled",
             "value" : "false",
@@ -347,12 +353,16 @@
           {
             "name" : "firehose_debug_port",
             "value" : "-1",
+          {% if (smon_heapsize is defined) %}
           }, {
             "name": "firehose_heapsize",
-            "value": "2147483648"
+            "value": "{{ smon_heapsize }}"
+         {% endif %}
+         {% if (smon_non_java_memory is defined) %}
           }, {
             "name": "firehose_non_java_memory_bytes",
-            "value": "12884901888"
+            "value": "{{ smon_non_java_memory }}"
+          {% endif %}
           }, {
             "name": "firehose_storage_dir",
             "value": "{{ smon_firehose_storage_dir }}"

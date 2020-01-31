@@ -107,7 +107,7 @@
     user: "{{ scm_default_user }}"
     password: "{{ scm_default_pass }}"
     return_content: yes
-    run_once: true
+  run_once: true
 
 - name: Restart Cluster
   uri:

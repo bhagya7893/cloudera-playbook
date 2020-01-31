@@ -34,8 +34,8 @@
   copy:
    src: "/tmp/kms/{{ hostvars[groups['kms_servers'][0]]['inventory_hostname'] }}{{ kms_key_dir }}/keytrustee/.keytrustee"
    dest: "{{ kms_key_dir }}/keytrustee/"
-   owner: keytrustee-kms
-   group: keytrustee-kms
+   owner: kms
+   group: kms
    mode: '0600'
 
 - name: Delete local directories for kts files
