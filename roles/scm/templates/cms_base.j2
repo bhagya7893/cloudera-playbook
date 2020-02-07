@@ -17,7 +17,7 @@
       "name": "mgmt-SERVICEMONITOR",
       "type": "SERVICEMONITOR",
       "hostRef": {
-        "hostId": "{{ scm_host_ids[scm_hostname] }}"
+        "hostId": "{{ scm_hosts['ids'][scm_hostname] }}"
       }
     }, {
       "name": "mgmt-ACTIVITYMONITOR",
@@ -26,13 +26,13 @@
         "roleConfigGroupName": "mgmt-ACTIVITYMONITOR-BASE"
       },
       "hostRef": {
-        "hostId": "{{ scm_host_ids[scm_hostname] }}"
+        "hostId": "{{ scm_hosts['ids'][scm_hostname] }}"
       }
     }, {
       "name": "mgmt-HOSTMONITOR",
       "type": "HOSTMONITOR",
       "hostRef": {
-        "hostId": "{{ scm_host_ids[scm_hostname] }}"
+        "hostId": "{{ scm_hosts['ids'][scm_hostname] }}"
       }
     }, {
       "name": "mgmt-REPORTSMANAGER",
@@ -41,19 +41,19 @@
         "roleConfigGroupName": "mgmt-REPORTSMANAGER-BASE"
       },
       "hostRef": {
-        "hostId": "{{ scm_host_ids[scm_hostname] }}"
+        "hostId": "{{ scm_hosts['ids'][scm_hostname] }}"
       }
     }, {
       "name": "mgmt-EVENTSERVER",
       "type": "EVENTSERVER",
       "hostRef": {
-        "hostId": "{{ scm_host_ids[scm_hostname] }}"
+        "hostId": "{{ scm_hosts['ids'][scm_hostname] }}"
       }
     }, {
       "name": "mgmt-ALERTPUBLISHER",
       "type": "ALERTPUBLISHER",
       "hostRef": {
-        "hostId": "{{ scm_host_ids[scm_hostname] }}"
+        "hostId": "{{ scm_hosts['ids'][scm_hostname] }}"
       }
     }, {
       "name": "mgmt-NAVIGATOR",
@@ -62,7 +62,7 @@
         "roleConfigGroupName": "mgmt-NAVIGATOR-BASE"
       },
       "hostRef": {
-        "hostId": "{{ scm_host_ids[scm_hostname] }}"
+        "hostId": "{{ scm_hosts['ids'][scm_hostname] }}"
       }
     }, {
       "name": "mgmt-NAVIGATORMETASERVER",
@@ -71,7 +71,7 @@
         "roleConfigGroupName": "mgmt-NAVIGATORMETASERVER-BASE"
       },
       "hostRef": {
-        "hostId": "{{ scm_host_ids[scm_hostname] }}"
+        "hostId": "{{ scm_hosts['ids'][scm_hostname] }}"
       }
     }
   ],
@@ -104,9 +104,11 @@
           }, {
             "name" : "firehose_debug_port",
             "value" : "-1"
+          {% if (cluster_version_cdh_major >= '6') %}
           }, {
             "name" : "firehose_debug_tls_port",
             "value" : "-1"
+          {% endif %}
           }, {
             "name": "oom_heap_dump_dir",
             "value": "{{ oom_heap_dump_dir }}"
@@ -388,12 +390,16 @@
           {
             "name" : "firehose_debug_port",
             "value" : "-1",
+          {% if (cluster_version_cdh_major >= '6') %}
           }, {
             "name" : "firehose_debug_tls_port",
             "value" : "-1",
+          {% endif %}
+          {% if (firehose_non_java_memory_bytes is defined) %}
           }, {
             "name": "firehose_non_java_memory_bytes",
-            "value": "4294967296"
+            "value": "{{ firehose_non_java_memory_bytes }}"
+          {% endif %}
           }, {
             "name": "firehose_storage_dir",
             "value": "{{ hmon_firehose_storage_dir }}"

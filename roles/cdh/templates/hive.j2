@@ -107,9 +107,11 @@
       }, {
         "name" : "hive_log_dir",
         "value" : "{{ log_base }}/hive"
+      {% if (cluster_version_cdh_major >= '6') %}
       } , {
         "name" : "hiveserver2_load_balancer",
         "value" : "{{ hostvars[groups['haproxy'][0]]['inventory_hostname'] }}:10000"
+      {% endif %}
       {% if (cdh_services | json_query('[?type==`hive`].hiveserver2_java_heapsize') | length > 0 )  %}
       }, {
         "name" : "hiveserver2_java_heapsize",

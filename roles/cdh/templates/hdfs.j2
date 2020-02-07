@@ -254,10 +254,13 @@
     }, {
       "refName": "HDFS-1-BALANCER-BASE",
       "roleType": "BALANCER",
-      "configs": [{
+      "configs": [
+      {% if (cluster_version_cdh_major >= '6') %}
+      {
         "name" : "balancer_log_dir",
         "value" : "{{ log_base }}/hadoop-hdfs"
-      } ],
+      }
+      {% endif %} ],
       "base": true
     }, {
       "refName": "HDFS-1-GATEWAY-BASE",

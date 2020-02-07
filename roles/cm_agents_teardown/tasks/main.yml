@@ -10,6 +10,7 @@
   service: 
     name: supervisord
     state: stopped
+  ignore_errors: true
 
 - name: Delete CM agent run directories on all nodes
   shell: "rm /var/run/cloudera-scm-agent/process/* -rf"

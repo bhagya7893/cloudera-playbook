@@ -18,14 +18,12 @@
        {
         "type" : "KMS_KEYTRUSTEE",
         "hostRef" : {
-          "hostId" : "{{ scm_host_ids[hostvars[groups['kms_servers'][0]]['inventory_hostname']] }}",
-          "hostname" : "{{ hostvars[groups['kms_servers'][0]]['inventory_hostname'] }}"
+          "hostId" : "{{ scm_hosts['ids'][hostvars[groups['kms_servers'][0]]['inventory_hostname']] }}"
         }
       }, {
         "type" : "KMS_KEYTRUSTEE",
         "hostRef" : {
-          "hostId" : "{{ scm_host_ids[hostvars[groups['kms_servers'][1]]['inventory_hostname']] }}",
-          "hostname" : "{{ hostvars[groups['kms_servers'][1]]['inventory_hostname'] }}"
+          "hostId" : "{{ scm_hosts['ids'][hostvars[groups['kms_servers'][1]]['inventory_hostname']] }}"
         }
       }
     ]

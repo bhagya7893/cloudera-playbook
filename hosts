@@ -65,4 +65,4 @@ tristan3-1.vpc.cloudera.com
 krb5_kdc_type='mit'
 hdfs_tde_enabled='True'
 database_type='mysql'
-full_teardown='False'
+full_teardown='True'

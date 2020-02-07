@@ -95,7 +95,11 @@
       "value" : "{{ ldap_udom.url }}"
     }, {
       "name" : "auth_backend",
+      {% if (cluster_version_cdh_major >= '6') %}
       "value" : "desktop.auth.backend.LdapBackend,desktop.auth.backend.AllowFirstUserDjangoBackend"
+      {% else %}
+      "value" : "desktop.auth.backend.LdapBackend"
+      {% endif %}
     }, {
        "name" : "hbase_service",
        "ref" : "HBASE-1"

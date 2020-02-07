@@ -71,6 +71,9 @@
     user: "{{ scm_default_user }}"
     password: "{{ scm_default_pass }}"
     body_format: "json"
+    body: 
+       restartOnlyStaleServices: true
+       redeployClientConfiguration: true
     return_content: yes
   register: cluster_restart_resp
   run_once: true

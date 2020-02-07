@@ -14,6 +14,70 @@ ad_account_prefix: prefix_
 kdc_account_creation_host_override: tristan3-1.vpc.cloudera.com
 
 ## ------------------------------------------------------------------------------------------------------------
+## Cluster software installation options
+## ------------------------------------------------------------------------------------------------------------
+
+# Version of CDH to install
+cluster_version_cdh: 5.16.2
+#cluster_version_cdh: 7.x
+
+# Version of Cloudera Manager to install
+cluster_version_cm:  5.16.2
+#cluster_version_cm:  "{{ cluster_version_cdh }}"
+#cluster_version_cm:  7.x.0
+
+# Version of CDS Powered by Apache Spark (note: not installed if CDH6/7 is also selected)
+cluster_version_cds: 2.4.0.cloudera2
+
+# Helper variables for major and minor versions
+cluster_version_cdh_major: "{{ cluster_version_cdh.split('.')[0] }}"
+cluster_version_cdh_minor: "{{ cluster_version_cdh.split('.')[1] }}"
+cluster_version_cm_major: "{{ cluster_version_cm.split('.')[0] }}"
+cluster_version_cm_minor: "{{ cluster_version_cm.split('.')[1] }}"
+
+cloudera_archive_protocol: https://
+cloudera_archive: archive.cloudera.com
+cloudera_archive_authn: ""
+
+configs_by_version:
+  "5":
+    scm_repo_url:    "{{ cloudera_archive_protocol }}{{ cloudera_archive }}/cm5/redhat/{{ ansible_distribution_major_version }}/x86_64/cm/{{ cluster_version_cm }}/"
+    scm_repo_gpgkey: "{{ cloudera_archive_protocol }}{{ cloudera_archive }}/cm5/redhat/{{ ansible_distribution_major_version }}/x86_64/cm/RPM-GPG-KEY-cloudera"
+    scm_parcel_repositories: 
+      - "{{ cloudera_archive_protocol }}{{ cloudera_archive }}/cdh5/parcels/{{ cluster_version_cdh }}/"
+      - "{{ cloudera_archive_protocol }}{{ cloudera_archive }}/spark2/parcels/{{ cluster_version_cds }}/"
+      - "http://cloudera-build-3-us-central-1.gce.cloudera.com/s3/build/723506/parcels"
+      - "http://cloudera-build-3-us-central-1.gce.cloudera.com/s3/build/338985/parcels"
+    scm_csds:
+      - "{{ cloudera_archive_protocol }}{{ cloudera_archive }}/spark2/csd/SPARK2_ON_YARN-{{cluster_version_cds}}.jar"
+    scm_prepare_database_script_path: "/usr/share/cmf/schema/scm_prepare_database.sh"
+  "6":
+    scm_repo_url:    "{{ cloudera_archive_protocol }}{{ cloudera_archive }}/cm6/{{ cluster_version_cm }}/redhat{{ ansible_distribution_major_version }}/yum"
+    scm_repo_gpgkey: "{{ cloudera_archive_protocol }}{{ cloudera_archive }}/cm6/{{ cluster_version_cm }}/redhat{{ ansible_distribution_major_version }}/yum/RPM-GPG-KEY-cloudera"
+    scm_parcel_repositories: 
+      - "{{ cloudera_archive_protocol }}{{ cloudera_archive }}/cdh6/{{ cluster_version_cdh }}/parcels"
+      - http://tristan3-1.vpc.cloudera.com/parcels/keytrustee-kms-6.1.0-parcels/6.1.0/parcels/
+      - http://tristan3-1.vpc.cloudera.com/parcels/keytrustee-server-6.1.0-parcels/6.1.0/parcels/
+    scm_prepare_database_script_path: "/opt/cloudera/cm/schema/scm_prepare_database.sh"
+  "7":
+    scm_repo_url:    "{{ cloudera_archive_protocol }}{{ cloudera_archive_authn }}@{{ cloudera_archive }}/p/cm7/{{ cluster_version_cm }}/redhat{{ ansible_distribution_major_version }}/yum"
+    scm_repo_gpgkey: "{{ cloudera_archive_protocol }}{{ cloudera_archive_authn }}@{{ cloudera_archive }}/p/cm7/{{ cluster_version_cm }}/redhat{{ ansible_distribution_major_version }}/yum/RPM-GPG-KEY-cloudera"
+    scm_parcel_repositories:
+      - "{{ cloudera_archive_protocol }}{{ cloudera_archive_authn }}@{{ cloudera_archive }}/p/cdh7/{{ cluster_version_cdh }}/parcels"
+    scm_prepare_database_script_path: "/opt/cloudera/cm/schema/scm_prepare_database.sh"
+
+scm_default_user: admin
+scm_default_pass: admin
+scm_port: 7180
+scm_license_file: /path/to/cloudera_license.txt
+scm_parcel_repositories:            "{{ configs_by_version[cluster_version_cdh_major].scm_parcel_repositories }}"
+scm_prepare_database_script_path:   "{{ configs_by_version[cluster_version_cm_major].scm_prepare_database_script_path }}"
+scm_repo_url:                       "{{ configs_by_version[cluster_version_cm_major].scm_repo_url }}"
+scm_repo_gpgkey:                    "{{ configs_by_version[cluster_version_cm_major].scm_repo_gpgkey }}"
+scm_csds:                           "{{ configs_by_version[cluster_version_cm_major].scm_csds | default([]) }}"
+
+
+## ------------------------------------------------------------------------------------------------------------
 ## Java installation options
 ## ------------------------------------------------------------------------------------------------------------
 

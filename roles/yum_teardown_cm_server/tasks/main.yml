@@ -1,7 +1,7 @@
 ---
 
 - name: Remove the Cloudera Manager Server Packages
-  yum: name={{ item }} state=absent
-  with_items:
-    - "cloudera-manager-server-{{ scm_version }}"
-
+  yum:
+    name:
+      - "cloudera-manager-server"
+    state: absent

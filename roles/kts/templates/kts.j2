@@ -1,7 +1,7 @@
 {
-  "cdhVersion" : "6.0.0",
+  "cdhVersion" : "{{ cluster_version_cdh_major }}.0.0",
   "displayName" : "{{ kts_display_name }}",
-  "cmVersion" : "{{ scm_version }}",
+  "cmVersion" : "{{ cluster_version_cm }}",
   "products" : [ {% set prod_j = joiner(",") %}
     {% for product in kts_products %}
     {{ prod_j() }}

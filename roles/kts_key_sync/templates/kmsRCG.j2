@@ -16,9 +16,11 @@
         }, {
           "name" : "ssl_server_keystore_password",
           "value" : "{{ tls.keystore_password }}"
+        {% if (cluster_version_cdh_major >= '6') %}
         }, {
           "name" : "ssl_server_keystore_keypassword",
           "value" : "{{ tls.keystore_password }}"
+        {% endif %}
         }, {
           "name" : "ssl_enabled",
           "value" : "true"

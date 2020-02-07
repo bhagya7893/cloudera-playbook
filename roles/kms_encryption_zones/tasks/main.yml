@@ -115,6 +115,9 @@
     method: POST
     status_code: 200
     body_format: json
+    body:
+       restartOnlyStaleServices: false
+       redeployClientConfiguration: false
     force_basic_auth: yes
     user: "{{ scm_default_user }}"
     password: "{{ scm_default_pass }}"

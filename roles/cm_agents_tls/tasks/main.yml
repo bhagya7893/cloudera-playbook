@@ -7,10 +7,11 @@
 #- include: 36322.yml
 
 - name: Install Cloudera Manager Agents
-  yum: name={{ item }} state=installed
-  with_items:
-    - "cloudera-manager-daemons-{{ scm_version }}"
-    - "cloudera-manager-agent-{{ scm_version }}"
+  yum:
+    name:
+      - cloudera-manager-daemons
+      - cloudera-manager-agent
+    state: installed
 
 - name: Deploy CM Agent config ini
   template:

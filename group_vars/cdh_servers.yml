@@ -3,7 +3,6 @@
 db_hostname: "{{ hostvars[groups['db_server'][0]]['inventory_hostname'] }}"
 scm_hostname: "{{ hostvars[groups['scm_server'][0]]['inventory_hostname'] }}"
 
-cdh_version: 6.2.0
 cluster_display_name: Cluster1
 
 cdh_tls: true
@@ -57,6 +56,8 @@ cdh_services:
   - type: solr
 
   - type: spark
+
+  - type: spark2
   
   - type: yarn
     yarn_nodemanager_local_dirs: /data/1/yarn/nm

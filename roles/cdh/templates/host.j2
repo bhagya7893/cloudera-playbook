@@ -12,6 +12,9 @@
     "OOZIE-1-OOZIE_SERVER-BASE",
     "HIVE-1-HIVESERVER2-BASE",
     "SPARK_ON_YARN-1-GATEWAY-BASE",
+    {% if cluster_version_cdh_major < '6' %}
+    "SPARK2_ON_YARN-1-GATEWAY-BASE",
+    {% endif %}
     "HBASE-1-HBASERESTSERVER-BASE",
     "HBASE-1-HBASETHRIFTSERVER-BASE",
     "HUE-1-HUE_LOAD_BALANCER-BASE",
@@ -30,6 +33,9 @@
     "HUE-1-KT_RENEWER-BASE",
     {% endif %}
     "SPARK_ON_YARN-1-GATEWAY-BASE",
+    {% if cluster_version_cdh_major < '6' %}
+    "SPARK2_ON_YARN-1-GATEWAY-BASE",
+    {% endif %}
     "HBASE-1-HBASERESTSERVER-BASE",
     "HBASE-1-HBASETHRIFTSERVER-BASE",
     "SENTRY-1-GATEWAY-BASE",
@@ -69,6 +75,9 @@
     "IMPALA-1-CATALOGSERVER-BASE",
     "IMPALA-1-STATESTORE-BASE",
     "SPARK_ON_YARN-1-SPARK_YARN_HISTORY_SERVER-BASE",
+    {% if cluster_version_cdh_major < '6' %}
+    "SPARK2_ON_YARN-1-SPARK2_YARN_HISTORY_SERVER-BASE",
+    {% endif %}
     "KS_INDEXER-1-HBASE_INDEXER-BASE",
     "HIVE-1-GATEWAY-BASE",
     "YARN-1-JOBHISTORY-BASE" ]
@@ -82,6 +91,9 @@
     "HBASE-1-REGIONSERVER-BASE",
     "SOLR-1-SOLR_SERVER-BASE",
     "HIVE-1-GATEWAY-BASE",
+    {% if cluster_version_cdh_major < '6' %}
+    "SPARK2_ON_YARN-1-GATEWAY-BASE",
+    {% endif %}
     "SPARK_ON_YARN-1-GATEWAY-BASE" ]
 }
 {% if (krb5_kdc_type == 'neverever') %}, {

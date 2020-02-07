@@ -57,22 +57,6 @@
   retries: 5
   delay: 30
 
-# Install Cloudera Manager Python API
-# - include: api.yml
-
-# Retrieve auto-generated host IDs from SCM
-#- name: Get SCM hostIds for inventory hosts
-#  become: true
-#  action: scm_hosts
-#  register: scm_hosts_result
-
-#- set_fact: scm_host_ids="{{ scm_hosts_result.host_ids }}"
-#- debug: var=scm_host_ids
-
-#- set_fact: scm_host_names="{{ scm_hosts_result.host_names }}"
-#- debug: var=scm_host_names
-
-
 # Check whether cluster already exists
 # https://cloudera.github.io/cm_api/apidocs/v13/path__clusters.html
 
