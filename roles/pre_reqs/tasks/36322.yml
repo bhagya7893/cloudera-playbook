@@ -58,3 +58,5 @@
 - file: path=/var/lib/solr             state=directory owner=solr       group=solr       mode=0755
 - file: path=/var/lib/spark            state=directory owner=spark      group=spark      mode=0755
 - file: path=/var/lib/sentry           state=directory owner=sentry     group=sentry     mode=0755
+- file: path=/var/lib/keytrustee       state=directory owner=keytrustee group=keytrustee mode=0755
+- file: path=/var/lib/kms              state=directory owner=kms        group=kms        mode=0755
