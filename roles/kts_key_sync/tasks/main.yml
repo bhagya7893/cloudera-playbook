@@ -227,7 +227,7 @@
     method: POST
     body_format: json
     body: "{{ lookup('file', ''+ tmp_dir + '/kmshosts.json') }}"
-    status_code: 200
+    status_code: 200,400
     force_basic_auth: yes
     user: "{{ scm_default_user }}"
     password: "{{ scm_default_pass }}"
@@ -334,7 +334,7 @@
   delay: 5
   run_once: true
 
-- name: Restart KMS Service
+- name: Start KMS Service
   uri:
     url: "{{ cm_api_url }}/clusters/{{ cluster_display_name }}/services/keytrustee/commands/start"
     method: POST

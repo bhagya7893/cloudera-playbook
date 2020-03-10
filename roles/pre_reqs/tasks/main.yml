@@ -1,5 +1,6 @@
 - include_vars: "{{ inventory_dir }}/group_vars/tls_enc.yml"
 - include_vars: "{{ inventory_dir }}/group_vars/kms_servers.yml"
+- include_vars: "{{ inventory_dir }}/group_vars/kts_servers.yml"
 
 - include: 36322.yml
 
@@ -211,3 +212,16 @@
     - "{{ kms_key_dir }}"
     - "{{ kms_conf_dir }}"
   when: "'kms_servers' in group_names"
+
+- name: Create KTS Directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: keytrustee
+    group: keytrustee
+    mode: '0700' 
+  with_items:
+    - "{{ kts_services[0].keytrustee_server_DB_PASSIVE_BASE_db_root }}"
+    - "{{ kts_services[0].keytrustee_server_DB_ACTIVE_BASE_db_root }}"
+    - "{{ kts_services[0].keytrustee_server_keytrustee_home }}"
+  when: "'kts_servers' in group_names"
