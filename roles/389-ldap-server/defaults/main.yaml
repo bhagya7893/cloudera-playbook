@@ -1,0 +1,14 @@
+---
+# Configuration type
+# if it is set - preparation and 389-ds configuration activities will be skipped (usually to add a new replication agreement)
+ skip_config: false
+
+# General 389-ds settings
+ password: password
+ suffix: dc=mit,dc=example,dc=com
+ rootdn: cn=root
+ serverid: ldapsrv
+
+# Admin server settings
+ admin_password: password
+ admin_domain: mit.example.com

@@ -1,0 +1,13 @@
+---
+- block:
+   - name: Check that server is already installed
+     command: systemctl is-enabled dirsrv@{{ serverid }}
+     register: results_raw
+     changed_when: false
+
+  rescue:
+   - name: Copy installation template
+     template: src=templates/ldap.inf.j2 dest=/root/ldap.inf
+
+   - name: Run installation script setup-ds-admin.pl
+     shell: /usr/sbin/setup-ds-admin.pl -s -f /root/ldap.inf
