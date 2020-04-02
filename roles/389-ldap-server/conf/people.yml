@@ -1,0 +1,2 @@
+ bind_dn: "uid=cmadmin,ou=People,dc=mit,dc=example,dc=com"
+ bind_pw: "password"
