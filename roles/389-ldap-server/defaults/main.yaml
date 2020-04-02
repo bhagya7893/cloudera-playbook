@@ -6,9 +6,30 @@
 # General 389-ds settings
  password: password
  suffix: dc=mit,dc=example,dc=com
- rootdn: cn=root
+ rootdn: cn=Directory Manger
  serverid: ldapsrv
 
 # Admin server settings
  admin_password: password
  admin_domain: mit.example.com
+
+ server_uri: "ldap://bg-ldap-10.vpc.cloudera.com:389"
+ dc: "dc=mit,dc=example,dc=com"
+ ou_people: "ou=People"
+ ou_group: "ou=Group"
+ bind_dn: uid=admin,{{ ou_people }},{{ dc }}
+ bind_pw: password
+ ldap_lookup_config:
+ url: "{{ server_uri }}"
+ base: "{{ dc }}"
+ binddn: "{{ bind_dn }}"
+ bindpw: "{{ bind_pw }}"
+ scope: subtree
+ filter: (objectClass=*)
+
+ AllUidNumber:
+  base: "{{ ou_people }},{{ dc }}"
+  value:
+  - AllUidNumber: always_list=True
+
+ job: none
