@@ -1,0 +1,15 @@
+---
+- name: "Create Account {{ ldap_param.uid }}"
+  ldap_entry:
+    dn: uid={{ ldap_param.uid }},{{ ou_people }},{{ dc }}
+    objectClass:
+    - shadowAccount
+    - top
+    - posixAccount
+    - inetAccount
+    - account
+    - ldapPublicKey
+    attributes: "{{ ldap_param }}"
+    server_uri: '{{ server_uri }}'
+    bind_dn: '{{ bind_dn }}'
+    bind_pw: '{{ bind_pw }}'
