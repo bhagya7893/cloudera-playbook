@@ -1,15 +1,52 @@
 ---
-- name: "Create Account {{ ldap_param.uid }}"
+- include_vars: "/root/389-ldap-server/defaults/main.yml"
+
+- name: Adding groups
   ldap_entry:
-    dn: uid={{ ldap_param.uid }},{{ ou_people }},{{ dc }}
+    dn: "{{ item[1] }},{{ suffix }}"
+    state: present
     objectClass:
-    - shadowAccount
-    - top
-    - posixAccount
-    - inetAccount
-    - account
-    - ldapPublicKey
-    attributes: "{{ ldap_param }}"
-    server_uri: '{{ server_uri }}'
-    bind_dn: '{{ bind_dn }}'
-    bind_pw: '{{ bind_pw }}'
+      - top
+      - posixGroup
+      - groupOfUniqueNames
+    attributes:
+      cn: "{{ item[0] }}"
+      gidNumber: "{{ item[2] }}"
+    server_uri: "{{ server_url }}"
+    bind_dn: "{{ rootdn }}"
+    bind_pw: "{{ password }}"
+  loop:
+    - "{{ ['GROUP_CDH_ADMIN','cn=GROUP_CDH_ADMIN','1004'] }}"
+    - "{{ ['GROUP_CDH_ADMIN2','cn=GROUP_CDH_ADMIN2','1005'] }}"
+    - "{{ ['GROUP_CDH_ADMIN3','cn=GROUP_CDH_ADMIN3','1006'] }}"
+    - "{{ ['GROUP_CDH_ADMIN4','cn=GROUP_CDH_ADMIN4','1007'] }}"
+    - "{{ ['GROUP_CDH_ADMIN5','cn=GROUP_CDH_ADMIN5','1008'] }}"
+    - "{{ ['GROUP_CDH_ADMIN6','cn=GROUP_CDH_ADMIN6','1009'] }}"
+
+
+
+- name: Adding test users
+  ldap_entry:
+    dn: "{{ item[0] }},{{ ou_people }},{{ suffix }}"
+    state: present
+    objectClass:
+      - top
+      - posixGroup
+      - inetOrgPerson
+      - person
+      - inetUser
+      - OrganizationalPerson
+    attributes:
+      gidNumber: "{{ item[1] }}"
+      sn: "{{ item[2] }}"
+      cn: "{{ item[2] }}"
+      userPassword: "{{ item[3] }}"
+    server_uri: "{{ server_url }}"
+    bind_dn: "{{ rootdn }}"
+    bind_pw: "{{ password }}"
+  loop:
+    - "{{ ['uid=testuser1','1004','testuser1','pass1'] }}"
+    - "{{ ['uid=testuser2','1008','testuser2','pass2'] }}"
+    - "{{ ['uid=testuser3','1004','testuser3','pass3'] }}"
+    - "{{ ['uid=testuser4','1008','testuser4','pass4'] }}"
+    - "{{ ['uid=testuser5','1003','testuser5','pass5'] }}"

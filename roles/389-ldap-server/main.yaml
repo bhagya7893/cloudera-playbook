@@ -1,6 +1,34 @@
 ---
-- include: prepare_server.yaml
-  when: not skip_config
+# Configuration type
+# if it is set - preparation and 389-ds configuration activities will be skipped (usually to add a new replication agreement)
+ skip_config: false
 
-- include: configure_ldap_server.yaml
-  when: not skip_config
+# General 389-ds settings
+ password: password
+ suffix: dc=hadoop,dc=com
+ rootdn: cn=Directory Manger
+ serverid: ldapsrv
+
+# Admin server settings
+ admin_password: password
+ admin_domain: hadoop.com
+
+ server_uri: "ldap://<ldap_host>:389"
+ dc: "dc=hadoop,dc=com"
+ ou_people: "ou=People"
+ ou_group: "ou=Group"
+ #bind_dn: uid=admin,{{ ou_people }},{{ dc }}
+ bind_pw: password
+ ldap_lookup_config:
+ url: "{{ server_uri }}"
+ base: "{{ dc }}"
+ binddn: "{{ bind_dn }}"
+ bindpw: "{{ bind_pw }}"
+ scope: subtree
+ filter: (objectClass=*)
+
+# AllUidNumber:
+#  base: "{{ ou_people }},{{ dc }}"
+#  value:
+#  - AllUidNumber: always_list=True
+
